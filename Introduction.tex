@@ -1,16 +1,10 @@
 \chapter{Introduction}
 
-\textcolor{red}{Context: RL in game-playing}
+Game playing applications are not a recent phenomenon and can be traced back to Arthur Samuel's Checkers Player \citep{samuelStudiesMachineLearning1959} that used heuristic search methodology and \acrfull{td} learning \citep[p.~121]{suttonReinforcementLearningIntroduction2020} together with linear function approximation. 
 
-Game playing applications are not a recent phenomenon and can be traced back to Arthur Samuel's Checkers Player \citep{samuelStudiesMachineLearning1959} that used heuristic search methodology and temporal-difference learning \citep[p.~121]{suttonReinforcementLearningIntroduction2020} together with linear function approximation. \citet{tesauroTDGammonSelfTeachingBackgammon1994} introduced an impressive reinforcement learning program called TD-Gammon that could play the game of backgammon. It used little backgammon knowledge and yet was able to learn to play at the level of the world's strongest players using TD($\lambda$) algorithm and non-linear function approximation using \acrfull{ann} \citep[p.~421]{suttonReinforcementLearningIntroduction2020}.
+\citet{tesauroTDGammonSelfTeachingBackgammon1994} introduced an impressive reinforcement learning program called TD-Gammon that could play the game of backgammon. It required little backgammon knowledge and yet was able to learn to play at the level of the world's strongest players using TD($\lambda$) algorithm and non-linear function approximation using \acrfull{ann} \citep[p.~421]{suttonReinforcementLearningIntroduction2020}. The first version, TD-Gammon 0.0 \citep{tesauroPracticalIssuesTemporal1992}, using only raw board information as input, already outperformed programs trained with extensive backgammon knowledge \citep[p.~266]{tesauroPracticalIssuesTemporal1992}. This early success demonstrated the power of self-play and highlighted the merits of learning directly from experience. [\textcolor{red}{hand crafted features?}]
 
-$\;$ \textcolor{red}{Checkers player (brief+intro to simple function approximation)} $\rightarrow$ 
-
-$\;$ \textcolor{red}{TD-Gammon (advanced function approximation + hand crafted features)} $\rightarrow$ 
-
-$\;$ \textcolor{red}{DQN (advanced architecture to enable IID)} $\rightarrow$ 
-
-$\;$ \textcolor{red}{Atari breakthrough}
+More than two decades would pass before \citet[p.~529]{mnihHumanlevelControlDeep2015} introduced \acrfull{dqn}, an artificial agent capable of learning successful control policies directly from high-dimensional sensory inputs using reinforcement learning and \acrfull{dnn}. The \acrshort{dqn} agent, using only raw pixels and game scores as input, exceeded all prior algorithms and achieved human-level performance comparable to a professional game tester across 49 Atari 2600 games \citep[Figure 3]{mnihHumanlevelControlDeep2015}. Notably, this was achieved using a single algorithm, network architecture, and set of hyperparameters across all games.
 
 \textcolor{red}{Central question: DQN vs. A2C on Pong}
 
