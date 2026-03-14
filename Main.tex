@@ -79,15 +79,11 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 
 \renewcommand{\arraystretch}{1.75}
 
-\usepackage[acronym]{glossaries}
+\usepackage[acronym]{glossaries-extra}
+\makenoidxglossaries
 
-\makeglossaries
-
-\newacronym{dag}{DAG}{Directed Acyclical Graph}
-\newacronym{pc}{PC}{Peter-Clark}
-\newacronym{rct}{RCT}{Randomized Controlled Trial}
-\newacronym{ite}{ITE}{Individual Treatment Effect}
-\newacronym{ate}{ATE}{Average Treatment Effect}
+\newacronym{td}{TD}{Temporal-Difference}
+\newacronym{ann}{ANN}{Artificial Neural Network}
 
 % SAMI
 
@@ -124,7 +120,7 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 \input{Chapters/AppendixC}
 
 \clearpage
-\printglossary[type=\acronymtype]
+\printnoidxglossary[type=\acronymtype]
 % ---- Bibliography ----
 %
 % BibTeX users should specify bibliography style 
