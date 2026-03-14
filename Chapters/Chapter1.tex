@@ -1,0 +1,81 @@
+\chapter {TASK 1}
+\textit{Describe the process of Bayesian inference. Explain and justify how the choice of prior distributions can significantly impact the results of an analysis. Provide an illustrative example.}
+
+\section{Bayesian Inference}
+Statistical inference helps us draw conclusions about a system we want to study using methodologies based on variables that describe it. The variables are prone to random variation and follow a probability density. Statistical inference can be broken down mainly into frequentist (classical) inference and Bayesian inference.
+
+In frequentist inference random data are obtained via repeated experiments. The probability that describes the data is fixed meaning that the parameters of the probability distribution are also fixed i.e. not random variables. Conclusions about the system are derived based on how data would behave if we could repeat the experiment many times.
+
+In Bayesian inference, on the other hand, the data can be fixed and does not need to be obtained using repeated experiments. However, the parameters of the probability distribution describing the system are random. The parameters are updated as new data becomes available effectively facilitating conclusions we derive about the system. Before we see any data, we assume to have an initial guess about the probability distribution of the variables describing the system.
+
+The core concept behind Bayesian inference is the Bayes Theorem, from which it is named, which is as follows:
+\begin{equation}
+    \underbrace{P(\theta\,|\,D)}_{\text{posterior}} = 
+    \frac{\overbrace{P(D\,|\,\theta)}^{\text{likelihood}} \overbrace{P(\theta)}^{\text{prior}}}{\underbrace{P(D)}_{\text{evidence}}},\; P(D)>0
+    =
+    \frac{P(D\,|\,\theta)\,P(\theta)}{\int P(D,\theta)\,\mathrm{d}\theta}
+    =
+    \frac{P(D\,|\,\theta)\,P(\theta)}{\int P(D\,|\,\theta)\,P(\theta)\,\mathrm{d}\theta}
+    \label{eq:bayestheorem}
+\end{equation}
+
+where:
+
+$P(\theta)$ = The prior, our subjective prior knowledge about the parameter $\theta$ of the system before seeing any data
+
+$P(D\,|\,\theta)$ = The likelihood of observing the data $D$ given our hypothesis about the parameter $\theta$
+
+$P(\theta\,|\,D)$ = The posterior we are interested in is our conclusion about the parameter $\theta$ of the system given that we have observed the data $D$. It encapsulates all information available from the data and the prior.
+
+$P(D)$ = The evidence which is the probability of observing the data $D$
+
+Most often the evidence $P(D)$ is difficult to obtain and is simplified by using the law of total probability together with the chain rule of conditional probability as represented by the right side of the equation \eqref{eq:bayestheorem}. The evidence is often hard to compute even after this simplification due to the integral. It is important to note that the evidence is independent of the parameter $\theta$ and ensures that the posterior is normalized.
+
+\section{The Prior}
+Now we move on to the most moot issue in Bayesian inference. Whereas the likelihood $P(D\,|\,\theta)$ depends on the system under study, the prior $P(\theta)$ includes all our knowledge, or assumptions, of the system before we analyze any data. But where do we obtain such prior knowledge from? 
+
+The selection of a prior typically involves four key considerations. First, it should be informative and suitable for the system in question so that it does not conflict with the likelihood. Second, it is explicitly chosen, as it plays a role in the posterior calculation. Third, if feasible, it should be selected to simplify the derivation of the posterior distribution. Finally, if simplifying the posterior is not possible, the prior should be chosen to remain invariant to the parameterization of the system's parameter, $\theta$.
+
+A suitable prior can be based on census or statistical data, or from expert knowledge about the system domain. In some cases, it is possible to define a prior in a way that simplifies the calculation of the posterior. When this occurs, the prior is called a conjugate prior with respect to the given likelihood function. A conjugate prior ensures that the posterior distribution belongs to the same family of probability distributions as the prior, leading to an analytical expression of the posterior that can be easily used for parameter inference for the system being studied. 
+
+Choosing a conjugate prior is a matter of convenience and is not always feasible. 
+When we lack detailed knowledge of the system or want to avoid our subjective choice of prior influencing the posterior distribution, we can select a non-informative prior, which makes minimal assumptions about the system's parameters. The lack of a conjugate prior means that we must compute the integral in \eqref{eq:bayestheorem}, which is feasible only for a limited set of functions. When this is not possible, deriving the posterior requires numerical approximation methods via probabilistic modeling, adding significant complexity to the analysis.
+
+\section{Illustration of the choice of priors on the result of an analysis}
+My friend recently suggested leaving his new bike at the train station overnight, having calculated a 1 in 640 chance of it being stolen, given that there are 639 other bikes at the stand. I managed to change his mind by using the power of Bayesian analysis.
+
+\begin{equation*}
+    P(S\,|\,N) = 
+    \frac{P(N\,|\,S)\,P(S)}{P(N)} =
+    \frac{P(N\,|\,S)\,P(S)}{P(N\,|\,S)\,P(S)\,+\,P(N\,|\,\neg S)\,P(\neg S)}
+\end{equation*}
+
+where:
+
+$P(S\,|\,N)$ (posterior) = the probability of the bike being stolen given that it is new
+
+$P(N\,|\,S)$ (likelihood) = the likelihood that a stolen bike is one that is new
+
+$P(S)$ (prior) = the probability of the bike being stolen
+
+I obtained the likelihood value of 0.8 from my cousin who works for the police. From the city census data, I obtained the information that 1159 bikes have been stolen in the last 10 years. From the 2 bike shops in the city, we retrieved the total number of bikes they sold in the previous 10 years which is 30000 since they sell 3000 new bikes yearly. Considering only this year's bikes out of the previous 10 years as being new:
+
+$P(N\,|\,S)$ = 0.8
+
+$P(S)$ = $\frac{1159}{30000}$,\, $P(\neg S)$ = $\frac{28841}{30000}$
+
+$P(N\,|\,\neg S)$ = $\frac{3000}{28841}$
+
+Putting it all together:
+\begin{equation*}
+    P(S\,|\,N) = 
+    \frac{0.8\, \times \frac{1159}{30000}}{0.8\, \times \frac{1159}{30000}\,+\,\frac{3000}{28841}\, \times \frac{28841}{30000}} = 0.23
+\end{equation*}
+
+Using my friends uniform prior $P(S)$ of $\frac{1}{640}$ our calculation would have been:
+\begin{equation*}
+    P(S\,|\,N) = 
+    \frac{0.8\, \times \frac{1}{640}}{0.8\, \times \frac{1}{640}\,+\,\frac{3000}{29953}\, \times \frac{639}{640}} = 0.01, \text{where}\, 22953 = 30000 - \left( \frac{1}{640}\, \times 30000 \right)
+\end{equation*}
+
+A 23\% chance of his new bike being stolen led him to reconsider, illustrating how an informative prior enables better decision-making through Bayesian inference. By updating beliefs with new data, Bayesian analysis shows how the choice of priors can significantly impact the posterior outcome.
