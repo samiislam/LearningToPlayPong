@@ -1,81 +1,20 @@
-\chapter {TASK 1}
-\textit{Describe the process of Bayesian inference. Explain and justify how the choice of prior distributions can significantly impact the results of an analysis. Provide an illustrative example.}
+\chapter{Introduction}
 
-\section{Bayesian Inference}
-Statistical inference helps us draw conclusions about a system we want to study using methodologies based on variables that describe it. The variables are prone to random variation and follow a probability density. Statistical inference can be broken down mainly into frequentist (classical) inference and Bayesian inference.
+Game playing applications are not a recent phenomenon and can be traced back to Arthur Samuel's Checkers Player \citep{samuelStudiesMachineLearning1959} that used heuristic search methodology and \acrfull{td} learning \citep[p.~121]{suttonReinforcementLearningIntroduction2020} together with linear function approximation. 
 
-In frequentist inference random data are obtained via repeated experiments. The probability that describes the data is fixed meaning that the parameters of the probability distribution are also fixed i.e. not random variables. Conclusions about the system are derived based on how data would behave if we could repeat the experiment many times.
+The game of backgammon, with its vastly larger state space and an effective branching factor of approximately 400 \citep[p.~422]{suttonReinforcementLearningIntroduction2020}, demanded a far higher representational capacity than linear function approximation could provide. \citet{tesauroTDGammonSelfTeachingBackgammon1994} addressed this challenge with TD-Gammon, a \acrfull{rl} program that required little backgammon knowledge and yet was able to learn to play at the level of the world's strongest players using TD($\lambda$) algorithm and non-linear function approximation using \acrfull{ann} \citep[p.~421]{suttonReinforcementLearningIntroduction2020}. The first version of TD-Gammon, using only raw board information as input, already outperformed programs trained with extensive backgammon knowledge \citep[p.~266]{tesauroPracticalIssuesTemporal1992}. This early success demonstrated the power of self-play and highlighted the merits of learning directly from experience. In TD-Gammon 1.0 \citet[p.~20]{tesauroTDGammonSelfTeachingBackgammon1994} improved the level of play to match that of human experts by using hand-crafted backgammon features.
 
-In Bayesian inference, on the other hand, the data can be fixed and does not need to be obtained using repeated experiments. However, the parameters of the probability distribution describing the system are random. The parameters are updated as new data becomes available effectively facilitating conclusions we derive about the system. Before we see any data, we assume to have an initial guess about the probability distribution of the variables describing the system.
+More than two decades would pass before \citet[p.~529]{mnihHumanlevelControlDeep2015} introduced \acrfull{dqn}, an artificial agent capable of learning successful control policies directly from high-dimensional sensory inputs using \acrshort{rl} and \acrfull{dnn}. The agent required no hand-crafted features whatsoever. Using only raw pixels and game scores as input, \acrshort{dqn} exceeded all prior algorithms and achieved human-level performance comparable to a professional game tester across 49 Atari 2600 games \citep[Figure~3]{mnihHumanlevelControlDeep2015}. Remarkably, a single algorithm, network architecture, and set of hyperparameters sufficed for learning problem-specific features automatically for all games.
 
-The core concept behind Bayesian inference is the Bayes Theorem, from which it is named, which is as follows:
-\begin{equation}
-    \underbrace{P(\theta\,|\,D)}_{\text{posterior}} = 
-    \frac{\overbrace{P(D\,|\,\theta)}^{\text{likelihood}} \overbrace{P(\theta)}^{\text{prior}}}{\underbrace{P(D)}_{\text{evidence}}},\; P(D)>0
-    =
-    \frac{P(D\,|\,\theta)\,P(\theta)}{\int P(D,\theta)\,\mathrm{d}\theta}
-    =
-    \frac{P(D\,|\,\theta)\,P(\theta)}{\int P(D\,|\,\theta)\,P(\theta)\,\mathrm{d}\theta}
-    \label{eq:bayestheorem}
-\end{equation}
+Pong was among the 49 Atari 2600 games that \acrshort{dqn} was tested on, leveraging the \acrfull{ale} \citep{bellemareArcadeLearningEnvironment2013} as a testbed for studying learning and planning algorithms. All games shared a common observation space of raw pixel inputs, preprocessed identically without any game-specific knowledge, but they differed in their action spaces, state-transition dynamics, and the optimal policies required to maximize score \citep[p.~437]{suttonReinforcementLearningIntroduction2020}. This diverse yet standardized benchmark enabled meaningful comparison of different \acrshort{rl} algorithms. Among these, Pong, a simple game in which two paddles move up or down to hit a ball back and forth, with a reward of +1 for each point scored and -1 for each point conceded, became a recurring test environment across major deep \acrshort{rl} architectures \citep{mnihHumanlevelControlDeep2015,mnihAsynchronousMethodsDeep2016,schulmanProximalPolicyOptimization2017}. Its simple rules, discrete action space, and sparse reward signal make it an effective testbed for comparing algorithms that take fundamentally different approaches to learning from high-dimensional visual input.
 
-where:
+\acrshort{dqn} is a value-based method that approximates the optimal action-value function, which estimates the long-term expected return of each action in a given state, and then acts by selecting the action with the highest estimated value \citep[p.~529]{mnihHumanlevelControlDeep2015}. Policy gradient methods offer a fundamentally different approach by parameterizing the policy directly, rather than deriving behavior from value estimates \citep[p.~321]{suttonReinforcementLearningIntroduction2020}. Among these, actor-critic methods combine a learned policy with a learned value function to guide policy updates and reduce the variance of gradient estimates \citep[p.~331]{suttonReinforcementLearningIntroduction2020}. \citet{mnihAsynchronousMethodsDeep2016} scaled this idea to deep neural networks with \acrfull{a3c}. Its synchronous variant, \acrfull{a2c}, retains the same actor-critic architecture while removing the need for asynchronous gradient updates, and has been shown to match or exceed the performance of A3C \citep{openaiBaselineACKTRA2C2017}, establishing it as a standard baseline in policy-based deep reinforcement learning \citep{dhariwalOpenAIBaselines2017}. This paper investigates how these two paradigms compare when applied to the same Pong environment, examining sample efficiency, training stability, and final performance.
 
-$P(\theta)$ = The prior, our subjective prior knowledge about the parameter $\theta$ of the system before seeing any data
+The comparison of \acrshort{dqn} and \acrshort{a2c} takes place under identical conditions based on the \acrshort{ale} Pong environment provided by Gymnasium. Both methods are model-free; model-based approaches are not considered in this paper. Moreover, advanced extensions such as Rainbow, which integrates six independent improvements over DQN \citep{hesselRainbowCombiningImprovements2017} or \acrfull{ppo} \citep{schulmanProximalPolicyOptimization2017} have been excluded.
 
-$P(D\,|\,\theta)$ = The likelihood of observing the data $D$ given our hypothesis about the parameter $\theta$
+Chapter 2 describes the foundations behind reinforcement learning, namely \acrfull{mdp}, Bellmann Equations, value functions and policy optimization used in this paper. In Chapter 2 
 
-$P(\theta\,|\,D)$ = The posterior we are interested in is our conclusion about the parameter $\theta$ of the system given that we have observed the data $D$. It encapsulates all information available from the data and the prior.
 
-$P(D)$ = The evidence which is the probability of observing the data $D$
+\textcolor{red}{Structural outline}
 
-Most often the evidence $P(D)$ is difficult to obtain and is simplified by using the law of total probability together with the chain rule of conditional probability as represented by the right side of the equation \eqref{eq:bayestheorem}. The evidence is often hard to compute even after this simplification due to the integral. It is important to note that the evidence is independent of the parameter $\theta$ and ensures that the posterior is normalized.
-
-\section{The Prior}
-Now we move on to the most moot issue in Bayesian inference. Whereas the likelihood $P(D\,|\,\theta)$ depends on the system under study, the prior $P(\theta)$ includes all our knowledge, or assumptions, of the system before we analyze any data. But where do we obtain such prior knowledge from? 
-
-The selection of a prior typically involves four key considerations. First, it should be informative and suitable for the system in question so that it does not conflict with the likelihood. Second, it is explicitly chosen, as it plays a role in the posterior calculation. Third, if feasible, it should be selected to simplify the derivation of the posterior distribution. Finally, if simplifying the posterior is not possible, the prior should be chosen to remain invariant to the parameterization of the system's parameter, $\theta$.
-
-A suitable prior can be based on census or statistical data, or from expert knowledge about the system domain. In some cases, it is possible to define a prior in a way that simplifies the calculation of the posterior. When this occurs, the prior is called a conjugate prior with respect to the given likelihood function. A conjugate prior ensures that the posterior distribution belongs to the same family of probability distributions as the prior, leading to an analytical expression of the posterior that can be easily used for parameter inference for the system being studied. 
-
-Choosing a conjugate prior is a matter of convenience and is not always feasible. 
-When we lack detailed knowledge of the system or want to avoid our subjective choice of prior influencing the posterior distribution, we can select a non-informative prior, which makes minimal assumptions about the system's parameters. The lack of a conjugate prior means that we must compute the integral in \eqref{eq:bayestheorem}, which is feasible only for a limited set of functions. When this is not possible, deriving the posterior requires numerical approximation methods via probabilistic modeling, adding significant complexity to the analysis.
-
-\section{Illustration of the choice of priors on the result of an analysis}
-My friend recently suggested leaving his new bike at the train station overnight, having calculated a 1 in 640 chance of it being stolen, given that there are 639 other bikes at the stand. I managed to change his mind by using the power of Bayesian analysis.
-
-\begin{equation*}
-    P(S\,|\,N) = 
-    \frac{P(N\,|\,S)\,P(S)}{P(N)} =
-    \frac{P(N\,|\,S)\,P(S)}{P(N\,|\,S)\,P(S)\,+\,P(N\,|\,\neg S)\,P(\neg S)}
-\end{equation*}
-
-where:
-
-$P(S\,|\,N)$ (posterior) = the probability of the bike being stolen given that it is new
-
-$P(N\,|\,S)$ (likelihood) = the likelihood that a stolen bike is one that is new
-
-$P(S)$ (prior) = the probability of the bike being stolen
-
-I obtained the likelihood value of 0.8 from my cousin who works for the police. From the city census data, I obtained the information that 1159 bikes have been stolen in the last 10 years. From the 2 bike shops in the city, we retrieved the total number of bikes they sold in the previous 10 years which is 30000 since they sell 3000 new bikes yearly. Considering only this year's bikes out of the previous 10 years as being new:
-
-$P(N\,|\,S)$ = 0.8
-
-$P(S)$ = $\frac{1159}{30000}$,\, $P(\neg S)$ = $\frac{28841}{30000}$
-
-$P(N\,|\,\neg S)$ = $\frac{3000}{28841}$
-
-Putting it all together:
-\begin{equation*}
-    P(S\,|\,N) = 
-    \frac{0.8\, \times \frac{1159}{30000}}{0.8\, \times \frac{1159}{30000}\,+\,\frac{3000}{28841}\, \times \frac{28841}{30000}} = 0.23
-\end{equation*}
-
-Using my friends uniform prior $P(S)$ of $\frac{1}{640}$ our calculation would have been:
-\begin{equation*}
-    P(S\,|\,N) = 
-    \frac{0.8\, \times \frac{1}{640}}{0.8\, \times \frac{1}{640}\,+\,\frac{3000}{29953}\, \times \frac{639}{640}} = 0.01, \text{where}\, 22953 = 30000 - \left( \frac{1}{640}\, \times 30000 \right)
-\end{equation*}
-
-A 23\% chance of his new bike being stolen led him to reconsider, illustrating how an informative prior enables better decision-making through Bayesian inference. By updating beliefs with new data, Bayesian analysis shows how the choice of priors can significantly impact the posterior outcome.
+\textcolor{red}{Definitions}
