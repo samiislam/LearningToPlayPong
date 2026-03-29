@@ -12,9 +12,4 @@ Pong was among the 49 Atari 2600 games that \acrshort{dqn} was tested on, levera
 
 The comparison of \acrshort{dqn} and \acrshort{a2c} takes place under identical conditions based on the \acrshort{ale} Pong environment provided by Gymnasium. Both methods are model-free; model-based approaches are not considered in this paper. Moreover, advanced extensions such as Rainbow, which integrates six independent improvements over DQN \citep{hesselRainbowCombiningImprovements2017} or \acrfull{ppo} \citep{schulmanProximalPolicyOptimization2017} have been excluded.
 
-Chapter 2 describes the foundations behind reinforcement learning, namely \acrfull{mdp}, Bellmann Equations, value functions and policy optimization used in this paper. In Chapter 2 
-
-
-\textcolor{red}{Structural outline}
-
-\textcolor{red}{Definitions}
+Chapter 2 establishes the theoretical foundations of reinforcement learning, covering \acrfull{mdp}, Bellman equations, the agent-environment interaction loop, and state and action value functions. It then introduces the two paths to policy optimization, value-based and policy-based methods, that underpin the comparative analysis in this paper. Chapter 3 develops \acrshort{dqn} by starting with the mathematical foundations of Q-Learning, then describes the critical roles of experience replay and target networks that contributed to the success of \acrshort{dqn} in \citet{mnihHumanlevelControlDeep2015}. Chapter 4 traces the development of policy gradient methods, emphasizes the deficiency of the REINFORCE algorithm, and introduces the actor-critic framework and its deep reinforcement learning instantiation, \acrshort{a2c}, as principled solutions. Chapter 5 describes the setup required to use Atari Pong as the testbed, walks through the implementation, and presents the results of applying \acrshort{dqn} and \acrshort{a2c} to Pong. Chapter 6 compares \acrshort{dqn} and \acrshort{a2c} along the axes of sample efficiency, training stability, and algorithmic differences. Finally, Chapter 7 concludes the paper by summarizing the central findings and identifying directions for future work.
