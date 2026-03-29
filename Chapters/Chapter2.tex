@@ -1,8 +1,22 @@
 \chapter {Reinforcement Learning Foundations}
 \label{chap:reinforcementlearningfoundations}
 
+Comparing \acrshort{dqn} and \acrshort{a2c} on Pong requires a shared formal language for states, actions, rewards, and optimality. Section~\ref{sec:mdpframework} formalizes the relationship between these elements as an \acrshort{mdp}. Value functions and Bellman equations are established in Section~\ref{sec:valuefunctionbellman}. Finally, Section~\ref{sec:policyoptimization} shows that these equations lead to two distinct paths to an optimal policy.
+
 \section{The MDP Framework}
+\label{sec:mdpframework}
+
+The formalization of \acrshort{rl} learning problems in \acrshort{mdp} can best be described using the Agent-Environment Interface.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\textwidth]{Figures/AgentEnvironmentInterface.pdf}
+	\caption{Own representation based on the agent-environment interaction in a Markov descision process \citep[Figure~3.1]{suttonReinforcementLearningIntroduction2020}.
+	\label{fig:yourlabel}}
+\end{figure}
 
 \section{Value Functions and the Bellman Equations}
+\label{sec:valuefunctionbellman}
 
 \section{Policy Optimization}
+\label{sec:policyoptimization}
