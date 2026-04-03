@@ -11,9 +11,21 @@ The formalization of \acrshort{rl} learning problems in \acrshort{mdp} can best 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\textwidth]{Figures/AgentEnvironmentInterface.pdf}
-	\caption{Own representation based on the agent-environment interaction in a Markov descision process \citep[Figure~3.1]{suttonReinforcementLearningIntroduction2020}.
-	\label{fig:yourlabel}}
+	\caption{Own representation based on the agent-environment interaction\\ in a Markov decision process \citep[Figure~3.1]{suttonReinforcementLearningIntroduction2020}.}
+	\label{fig:yourlabel}
 \end{figure}
+
+The agent interacts with the environment in order to achieve a goal. Following the reward hypothesis \citep[p.~53]{suttonReinforcementLearningIntroduction2020}, this goal can be expressed as the maximization of a cumulative reward signal, formalized in the next section as the expected discounted return. At each timestep the agent observes a representation of the environment's state, selects an action, receives a reward from the environment which then transitions to a new state. When this interaction satisfies the Markov property, meaning the next state and reward depend only on the current state and action, the problem can be formalized as an \acrshort{mdp}. Chapter~\ref{chap:pong} formalizes the game of Pong within this framework. When the state space $\mathcal{S}$, action space $\mathcal{A}$, and reward set $\mathcal{R}$ all have a finite number of elements, the \acrshort{mdp} is said to be finite. In this case, given a specific preceding state $s$ and action $a$, the probability of transitioning to any particular successor state $s^{\prime} \in \mathcal{S}$ and receiving a specific reward $r \in \mathcal{R}$ at time $t$ is well defined:
+
+\begin{equation}
+	p(s^{\prime}, r\;|\;s, a) \doteq Pr\{S_t = s^{\prime}, R_t = r\;| \;S_{t-1} = s, A_{t-1} = a\},
+\end{equation}
+for all $s^{\prime}, s \in \mathcal{S}$, $r \in \mathcal{R}$, and $a \in \mathcal{A}(s)$. The probability distribution $p$ completely describe the  dynamics of the \acrshort{mdp} for each choice of $s$ and $a$ such that:
+\begin{equation}
+	\sum_{s^{\prime} \in \mathcal{S}}\;\sum_{r \in \mathcal{R}}\;p(s^{\prime}, r\;|\;s, a) = 1,\;\;\text{for all}\; s \in \mathcal{S}, a \in \mathcal{A}(s)
+\end{equation}
+
+The \acrshort{mdp} formalizes what the agent interacts with. The next section introduces the machinery for evaluating how well the agent learns.
 
 \section{Value Functions and the Bellman Equations}
 \label{sec:valuefunctionbellman}
