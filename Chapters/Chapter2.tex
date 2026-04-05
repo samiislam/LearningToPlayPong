@@ -29,23 +29,54 @@ The \acrshort{mdp} formalizes what the agent interacts with. The next section in
 
 \section{Value Functions and the Bellman Equations}
 \label{sec:valuefunctionbellman}
-Value functions, used almost in all \acrshort{rl} algorithms, estimate how good it is for the agent to be in a given state, or to take a given action in a given state, where good is defined as the expected cumulative reward the agent can expect to receive from that point onward. This expected cumulative reward is formalized through the discounted return:
-\begin{equation}
+Value functions, used in almost all \acrshort{rl} algorithms, estimate how good it is for the agent to be in a given state, or to take a given action in a given state. Here, `good' is defined as the cumulative reward the agent can expect to receive from that point onward. This expected cumulative reward is formalized through the discounted return:
+\begin{equation}\label{eq:discounted_return}
 	G_t \doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \dots = \sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1},
 \end{equation}
-where $\gamma$ is a parameter, $0 \leq \gamma \leq 1$, called the discount rate. The value of a reward is discounted by a factor of $\gamma^{k-1}$ when it arrives k time steps later rather than immediately.
+where $\gamma$ is a parameter, $0 \leq \gamma \leq 1$, called the discount rate. The value of a reward is discounted by a factor of $\gamma^{k-1}$ when it arrives k time steps later rather than immediately. The discount rate determines the present value of future rewards. With $\gamma$ close to zero, the agent is near-sighted and weighs immediate rewards heavily, while a value close to one makes the agent far-sighted and accounts for rewards far into the future.
 
 
+Actions define the reward an agent can expect to receive. At any state, an agent has a certain probability of choosing each possible action. The mapping between the state and the probability of selecting each action is formally called a policy and is defined as $\pi{\left(a|s\right)}$, where $a \in \mathcal{A}(s)$ for each $s \in \mathcal{S}$. When starting from a state $s$, its value function, $	v_\pi\left(s\right)$, when following the policy $\pi$, is the expected return:
+\begin{equation}\label{eq:state_value_function}
+	v_\pi\left(s\right) \doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\,|\,S_t = s \right],\;\,\text{for all}\, s \in \mathcal{S},
+\end{equation}
+where $\mathbb{E}_\pi[\cdot]$ represents the expected value of a random variable when the policy $\pi$ is followed, and $t$ is any time step. The function $v_\pi\left(s\right)$ is called the state-value function. An equivalent function exists for when taking action $a$ in state $s$ following policy $\pi$ and is called the action-value function denoted as:
+\begin{equation}
+	q_\pi\left(s, a\right) \doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s, A_t = a\right] = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\,|\,S_t = s, A_t = a\right],\;\,\text{for all}\, s \in \mathcal{S},\,\text{and}\, a \in \mathcal{A}(s).
+\end{equation}
 
 
-
-Moreover, the returns at successive time steps are related to each other:
-\begin{align*}
-	G_t &\doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \gamma^{3} R_{t+4} + \dots\\
-	&=  R_{t+1} + \gamma \left(R_{t+2} + \gamma R_{t+3} + \gamma^{2} R_{t+4} + \dots \right)\\
+A fundamental property of the return is that it can be written recursively, which leads directly to the Bellman equations. The returns in \eqref{eq:discounted_return} at successive time steps are related to each other:
+\begin{align}\label{eq:recursive_return}
+	G_t &\doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \gamma^{3} R_{t+4} + \dots \nonumber \\
+	&=  R_{t+1} + \gamma \left(R_{t+2} + \gamma R_{t+3} + \gamma^{2} R_{t+4} + \dots \right) \nonumber \\
 	&= R_{t+1} + \gamma G_{t+1}
-\end{align*}
+\end{align}
+and is used to derive the Bellman equation for $v_\pi$:
+\begin{align}
+	v_\pi\left(s\right) &\doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] \nonumber \tag{from \ref{eq:state_value_function}}\\
+	&= \mathbb{E}_\pi\left[R_{t+1} + \gamma G_{t+1}\,|\,S_t = s\right] \nonumber \tag{by \ref{eq:recursive_return}}\\
+	&= \sum_{a} \pi(a|s) \sum_{s^{\prime}} \sum_{r}p(s^{\prime}, r\;|\;s, a)\,\bigg[r + \gamma \mathbb{E}_\pi\left[G_{t+1}\,|\,S_{t+1} = s^{\prime}\right] \bigg] \nonumber \\
+	&= \sum_{a} \pi(a|s) \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma v_\pi(s^{\prime})\right],\;\;\text{for all}\;s,s^{\prime} \in \mathcal{S}, a \in \mathcal{A}(s), \text{and}\;r \in \mathcal{R},
+\end{align}
+where the last two sum notations are merged together. The expected value $\mathbb{E}$ is broken down into the sum over all the values of $a$, $s^\prime$ and $r$ weighted by their combined probability $\pi(a|s)\,p(s^{\prime}, r\;|\;s, a)$.
 
+By analogous reasoning, the Bellman equation for the $q_\pi$ is:
+\begin{equation}
+	q_\pi(s, a) = \sum_{s', r} p(s', r \mid s, a) \left[ r + \gamma \sum_{a'} \pi(a' \mid s') \, q_\pi(s', a') \right],
+\end{equation}
+for all $s,s^{\prime} \in \mathcal{S}$, $a \in \mathcal{A}(s)$, $a^{\prime} \in \mathcal{A}(s^{\prime})$ and $r \in \mathcal{R}$.
+
+Both the state-value and action-value Bellman equations can be written in terms of an optimal policy, $\pi^*$, which is a policy better than or equal to all other policies in every state. Value functions using $\pi^*$ are called Bellman optimality equations and denoted as $v_*(s)$ and $q_*(s,a)$ correspondingly:
+
+\begin{equation}
+	v_*(s) = \max_{a} \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma v_*(s^{\prime})\right],
+\end{equation}
+\begin{equation}
+	q_*(s,a) = \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma \max_{a^{\prime}}q_*(s^{\prime}, a^{\prime})\right].
+\end{equation}
+
+\acrshort{dqn} uses the Bellman optimality equation for action-value function $q_*(s,a)$, and \acrshort{a2c} uses the Bellman expectation equation for state-value function $v_\pi\left(s\right)$ in its critic network.
 
 \section{Policy Optimization}
 \label{sec:policyoptimization}
