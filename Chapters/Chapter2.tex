@@ -29,6 +29,23 @@ The \acrshort{mdp} formalizes what the agent interacts with. The next section in
 
 \section{Value Functions and the Bellman Equations}
 \label{sec:valuefunctionbellman}
+Value functions, used almost in all \acrshort{rl} algorithms, estimate how good it is for the agent to be in a given state, or to take a given action in a given state, where good is defined as the expected cumulative reward the agent can expect to receive from that point onward. This expected cumulative reward is formalized through the discounted return:
+\begin{equation}
+	G_t \doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \dots = \sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1},
+\end{equation}
+where $\gamma$ is a parameter, $0 \leq \gamma \leq 1$, called the discount rate. The value of a reward is discounted by a factor of $\gamma^{k-1}$ when it arrives k time steps later rather than immediately.
+
+
+
+
+
+Moreover, the returns at successive time steps are related to each other:
+\begin{align*}
+	G_t &\doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \gamma^{3} R_{t+4} + \dots\\
+	&=  R_{t+1} + \gamma \left(R_{t+2} + \gamma R_{t+3} + \gamma^{2} R_{t+4} + \dots \right)\\
+	&= R_{t+1} + \gamma G_{t+1}
+\end{align*}
+
 
 \section{Policy Optimization}
 \label{sec:policyoptimization}
