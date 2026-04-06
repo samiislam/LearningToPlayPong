@@ -6,7 +6,7 @@ Comparing \acrshort{dqn} and \acrshort{a2c} on Pong requires a shared formal lan
 \section{The MDP Framework}
 \label{sec:mdpframework}
 
-The formalization of \acrshort{rl} learning problems in \acrshort{mdp} can best be described using the Agent-Environment Interface.
+The formalization of \acrshort{rl} learning problems in \acrshort{mdp} can best be described using the agent-environment interface.
 
 \begin{figure}[h]
 	\centering
@@ -16,7 +16,6 @@ The formalization of \acrshort{rl} learning problems in \acrshort{mdp} can best 
 \end{figure}
 
 The agent interacts with the environment in order to achieve a goal. Following the reward hypothesis \citep[p.~53]{suttonReinforcementLearningIntroduction2020}, this goal can be expressed as the maximization of a cumulative reward signal, formalized in the next section as the expected discounted return. At each timestep the agent observes a representation of the environment's state, selects an action, receives a reward from the environment which then transitions to a new state. When this interaction satisfies the Markov property, meaning the next state and reward depend only on the current state and action, the problem can be formalized as an \acrshort{mdp}. Chapter~\ref{chap:pong} formalizes the game of Pong within this framework. When the state space $\mathcal{S}$, action space $\mathcal{A}$, and reward set $\mathcal{R}$ all have a finite number of elements, the \acrshort{mdp} is said to be finite. In this case, given a specific preceding state $s$ and action $a$, the probability of transitioning to any particular successor state $s^{\prime} \in \mathcal{S}$ and receiving a specific reward $r \in \mathcal{R}$ at time $t$ is well defined:
-
 \begin{equation}
 	p(s^{\prime}, r\;|\;s, a) \doteq Pr\{S_t = s^{\prime}, R_t = r\;| \;S_{t-1} = s, A_{t-1} = a\},
 \end{equation}
@@ -29,14 +28,13 @@ The \acrshort{mdp} formalizes what the agent interacts with. The next section in
 
 \section{Value Functions and the Bellman Equations}
 \label{sec:valuefunctionbellman}
-Value functions, used in almost all \acrshort{rl} algorithms, estimate how good it is for the agent to be in a given state, or to take a given action in a given state. Here, `good' is defined as the cumulative reward the agent can expect to receive from that point onward. This expected cumulative reward is formalized through the discounted return:
+Value functions, used in almost all \acrshort{rl} algorithms, estimate how good it is for the agent to be in a given state, or to take a given action in a given state \citep[Chapter~3]{suttonReinforcementLearningIntroduction2020}. Here, `good' is defined as the cumulative reward the agent can expect to receive from that point onward. This expected cumulative reward is formalized through the discounted return:
 \begin{equation}\label{eq:discounted_return}
 	G_t \doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \dots = \sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1},
 \end{equation}
 where $\gamma$ is a parameter, $0 \leq \gamma \leq 1$, called the discount rate. The value of a reward is discounted by a factor of $\gamma^{k-1}$ when it arrives k time steps later rather than immediately. The discount rate determines the present value of future rewards. With $\gamma$ close to zero, the agent is near-sighted and weighs immediate rewards heavily, while a value close to one makes the agent far-sighted and accounts for rewards far into the future.
 
-
-Actions define the reward an agent can expect to receive. At any state, an agent has a certain probability of choosing each possible action. The mapping between the state and the probability of selecting each action is formally called a policy and is defined as $\pi{\left(a|s\right)}$, where $a \in \mathcal{A}(s)$ for each $s \in \mathcal{S}$. When starting from a state $s$, its value function, $	v_\pi\left(s\right)$, when following the policy $\pi$, is the expected return:
+The expected return depends on how the agent selects actions. The mapping between the state and the probability of selecting each action is formally called a policy and is defined as $\pi{\left(a|s\right)}$, where $a \in \mathcal{A}(s)$ for each $s \in \mathcal{S}$. When starting from a state $s$, its value function, $	v_\pi\left(s\right)$, when following the policy $\pi$, is the expected return:
 \begin{equation}\label{eq:state_value_function}
 	v_\pi\left(s\right) \doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\,|\,S_t = s \right],\;\,\text{for all}\, s \in \mathcal{S},
 \end{equation}
@@ -46,17 +44,21 @@ where $\mathbb{E}_\pi[\cdot]$ represents the expected value of a random variable
 \end{equation}
 
 
-A fundamental property of the return is that it can be written recursively, which leads directly to the Bellman equations. The returns in \eqref{eq:discounted_return} at successive time steps are related to each other:
+A fundamental property of the return is that it can be written recursively, which leads directly to the Bellman equations \citep{bellmanDynamicProgramming1957}. The returns in \eqref{eq:discounted_return} at successive time steps are related to each other:
 \begin{align}\label{eq:recursive_return}
 	G_t &\doteq R_{t+1} + \gamma R_{t+2} + \gamma^{2} R_{t+3} + \gamma^{3} R_{t+4} + \dots \nonumber \\
 	&=  R_{t+1} + \gamma \left(R_{t+2} + \gamma R_{t+3} + \gamma^{2} R_{t+4} + \dots \right) \nonumber \\
 	&= R_{t+1} + \gamma G_{t+1}
 \end{align}
 and is used to derive the Bellman equation for $v_\pi$:
+\begin{align*}
+	v_\pi\left(s\right) &\doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] \tag{from \ref{eq:state_value_function}}\\
+	&= \mathbb{E}_\pi\left[R_{t+1} + \gamma G_{t+1}\,|\,S_t = s\right]. \tag{by \ref{eq:recursive_return}}
+\end{align*}
+
+By expanding the expectation over the MDP dynamics and applying the Markov property, we obtain:
 \begin{align}
-	v_\pi\left(s\right) &\doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] \nonumber \tag{from \ref{eq:state_value_function}}\\
-	&= \mathbb{E}_\pi\left[R_{t+1} + \gamma G_{t+1}\,|\,S_t = s\right] \nonumber \tag{by \ref{eq:recursive_return}}\\
-	&= \sum_{a} \pi(a|s) \sum_{s^{\prime}} \sum_{r}p(s^{\prime}, r\;|\;s, a)\,\bigg[r + \gamma \mathbb{E}_\pi\left[G_{t+1}\,|\,S_{t+1} = s^{\prime}\right] \bigg] \nonumber \\
+	v_\pi\left(s\right) &= \sum_{a} \pi(a|s) \sum_{s^{\prime}} \sum_{r}p(s^{\prime}, r\;|\;s, a)\,\bigg[r + \gamma \mathbb{E}_\pi\left[G_{t+1}\,|\,S_{t+1} = s^{\prime}\right] \bigg] \nonumber \\
 	&= \sum_{a} \pi(a|s) \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma v_\pi(s^{\prime})\right],\;\;\text{for all}\;s,s^{\prime} \in \mathcal{S}, a \in \mathcal{A}(s), \text{and}\;r \in \mathcal{R},
 \end{align}
 where the last two sum notations are merged together. The expected value $\mathbb{E}$ is broken down into the sum over all the values of $a$, $s^\prime$ and $r$ weighted by their combined probability $\pi(a|s)\,p(s^{\prime}, r\;|\;s, a)$.
@@ -67,8 +69,7 @@ By analogous reasoning, the Bellman equation for the $q_\pi$ is:
 \end{equation}
 for all $s,s^{\prime} \in \mathcal{S}$, $a \in \mathcal{A}(s)$, $a^{\prime} \in \mathcal{A}(s^{\prime})$ and $r \in \mathcal{R}$.
 
-Both the state-value and action-value Bellman equations can be written in terms of an optimal policy, $\pi^*$, which is a policy better than or equal to all other policies in every state. Value functions using $\pi^*$ are called Bellman optimality equations and denoted as $v_*(s)$ and $q_*(s,a)$ correspondingly:
-
+Both the state-value and action-value Bellman equations can be written in terms of an optimal policy, $\pi^*$, which is a policy better than or equal to all other policies in every state. The value functions using $\pi^*$ satisfy the Bellman optimality equations denoted as $v_*(s)$ and $q_*(s,a)$ correspondingly:
 \begin{equation}
 	v_*(s) = \max_{a} \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma v_*(s^{\prime})\right],
 \end{equation}
@@ -76,7 +77,7 @@ Both the state-value and action-value Bellman equations can be written in terms 
 	q_*(s,a) = \sum_{s^{\prime}, r} p(s^{\prime}, r\;|\;s, a) \left[r + \gamma \max_{a^{\prime}}q_*(s^{\prime}, a^{\prime})\right].
 \end{equation}
 
-\acrshort{dqn} uses the Bellman optimality equation for action-value function $q_*(s,a)$, and \acrshort{a2c} uses the Bellman expectation equation for state-value function $v_\pi\left(s\right)$ in its critic network.
+\acrshort{dqn} targets the Bellman optimality equation for the action-value function $q_*(s,a)$, while \acrshort{a2c}'s critic targets the Bellman expectation equation for the state-value function $v_\pi\left(s\right)$.
 
 \section{Policy Optimization}
 \label{sec:policyoptimization}
