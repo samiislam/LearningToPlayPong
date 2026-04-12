@@ -1,6 +1,11 @@
-\chapter {Value-Based Deep Reinforcement Learning - DQN}
+\chapter{Value-Based Deep Reinforcement Learning - DQN}
 \label{chap:dqn}
 
-\section{From Q-Learning to Deep Q-Networks}
+Chapter~\ref{chap:reinforcementlearningfoundations} identified two paths to an optimal policy. This chapter develops the first of them, the value-based route which estimates the optimal action-value function $q_*$ and derives a policy greedily from the estimate. In finite state spaces, the tabular Q-learning algorithm \citep{Watkins1989LearningFD} realizes this idea. Pong's observation space, however, is far too large for a tabular representation to be viable. The value function must therefore be approximated, and the resulting algorithm does not inherit tabular Q-learning's convergence guarantees \citep[Ch.~11]{suttonReinforcementLearningIntroduction2020}. Section~\ref{sec:fromqlearningtodqn} traces the path from tabular Q-learning to its deep, function-approximating counterpart and states the resulting optimization objective. Section~\ref{sec:stabilization} examines why a direct implementation of this objective is unstable and presents experience replay and target networks as the two mechanisms through which \acrshort{dqn} \citep{mnihHumanlevelControlDeep2015} restores stable learning.
 
-\section{Stabilization}
+\section{From Q-Learning to Deep Q-Networks}
+\label{sec:fromqlearningtodqn}
+
+
+\section{Stabilization mechanisms}
+\label{sec:stabilization}
