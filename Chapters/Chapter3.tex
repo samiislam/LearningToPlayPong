@@ -5,7 +5,11 @@ Chapter~\ref{chap:reinforcementlearningfoundations} identified two paths to an o
 
 \section{From Q-Learning to Deep Q-Networks}
 \label{sec:fromqlearningtodqn}
-
+Tabular Q-Learning is an off-policy \acrshort{td} control algorithm defined by:
+\begin{equation}\label{eq:q_learning}
+	Q\left(S_t, A_t\right) \leftarrow Q\left(S_t, A_t\right) + \alpha \left[R_{t+1} + \gamma \max_a Q\left(S_{t+1}, a\right) - Q\left(S_t, A_t\right)\right].
+\end{equation}
+$Q$ is the learned action-value function that directly approximates the Bellman optimal action-value function $q_*$. The $\max$ operator makes the update off-policy because the bootstrap target always uses the greedy action in $S_{t+1}$, irrespective of the action actually selected by the behavior policy \citep[p.~131]{suttonReinforcementLearningIntroduction2020}.
 
 \section{Stabilization mechanisms}
 \label{sec:stabilization}
