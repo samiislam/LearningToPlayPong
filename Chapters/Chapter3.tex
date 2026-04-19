@@ -30,6 +30,8 @@ Second, a dependency exists between the action-values $Q(s,a;\theta_i)$ and the 
 	
 The full \acrshort{dqn} loss function in \citet[p.~529]{mnihHumanlevelControlDeep2015} is:
 \begin{equation}\label{eq:q_learning_loss_function_in_dqn}
-	L_i\left(\theta_i\right) = \mathbb{E}_{(s, a, r, s^{\prime}) \sim U(D)} \Bigg[\bigg(r + \gamma \max_{a^{\prime}} Q(s^{\prime}, a^{\prime};\theta^{\,\text{--}}) - Q(s,a;\theta_i)\bigg)^2\Bigg],
+	L_i\left(\theta_i\right) = \mathbb{E}_{(s, a, r, s^{\prime}) \sim U(D)} \Bigg[\bigg(r + \gamma \max_{a^{\prime}} Q(s^{\prime}, a^{\prime};\theta_i^{\,\text{--}}) - Q(s,a;\theta_i)\bigg)^2\Bigg],
 \end{equation}
 where $(s, a, r, s^{\prime}) \sim U(D)$ denotes that the mini-batch samples are uniformly drawn from the agent's stored experience dataset $D$.
+
+The policy learned by \acrshort{dqn} is derived implicitly from the learned Q-values via greedy action selection. Chapter~\ref{chap:a2c} develops the alternative approach, in which the policy is parameterized and optimized directly.
