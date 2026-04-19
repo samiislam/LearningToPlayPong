@@ -1,6 +1,8 @@
 \chapter {Policy-Based Deep Reinforcement Learning - From REINFORCE to A2C}
 \label{chap:a2c}
 
+This chapter develops the second path identified in Section~\ref{sec:policyoptimization}. Instead of approximating $q_*$ and deriving the policy via $\argmax$, the policy is directly parameterized as $\pi(a|s, \theta)$ and $\theta$ is optimized by gradient ascent on a scalar performance measure. A value function may still be used to evaluate and improve the policy, but it is not used for action selection.
+
 \section{The Policy Gradient Theorem}
 
 \section{REINFORCE and the Variance Problem}
