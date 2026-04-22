@@ -4,6 +4,11 @@
 This chapter develops the second path identified in Section~\ref{sec:policyoptimization}. Instead of approximating $q_*$ and deriving the policy via $\argmax$, the policy is directly parameterized as $\pi(a|s, \theta)$ and $\theta$ is optimized by gradient ascent on a scalar performance measure. A value function may still be used to evaluate and improve the policy, but it is not used for action selection.
 
 \section{The Policy Gradient Theorem}
+For episodic case, such as Pong, the learning methods for the policy parameter $\theta$ are based on the gradient of a scalar performance measure defined as the value of the start state of the episode:
+\begin{equation}
+	J(\theta) \doteq v_{\pi_{\theta}}(s_0),
+\end{equation}
+where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$, the policy determined by $\theta$ and $s_0$ is the start state. $J(\theta)$ is the expected return and the goal is to find the $\theta$ that maximizes it. The gradient, $\nabla J(\theta)$, however, is not obvious since changing $\theta$ changes both the action selection and the state distribution that the policy induces.
 
 \section{REINFORCE and the Variance Problem}
 
