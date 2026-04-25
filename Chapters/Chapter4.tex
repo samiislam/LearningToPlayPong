@@ -4,11 +4,13 @@
 This chapter develops the second path identified in Section~\ref{sec:policyoptimization}. Instead of approximating $q_*$ and deriving the policy via $\argmax$, the policy is directly parameterized as $\pi(a|s, \theta)$ and $\theta$ is optimized by gradient ascent on a scalar performance measure. A value function may still be used to evaluate and improve the policy, but it is not used for action selection.
 
 \section{The Policy Gradient Theorem}
-For episodic case, such as Pong, the learning methods for the policy parameter $\theta$ are based on the gradient of a scalar performance measure defined as the value of the start state of the episode:
+Besides optimizing the policy directly, parameterized policy methods offer two further advantages over action-value methods. First, a soft-max policy $\pi(a|s, \theta)$ \citep[p.~322]{suttonReinforcementLearningIntroduction2020} assigns a learned probability to every action, allowing the agent to discover that a mixture of actions outperforms any single greedy choice. An $\epsilon$-greedy policy cannot do this because it commits to one action with probability 1 - $\epsilon$ and distributes the remaining $\epsilon$ uniformly, regardless of what the agent has learned about non-greedy actions. Second, with a continuous policy parameterization, small changes in $\theta$ produce small smooth changes in the action probabilities. With $\epsilon$-greedy action selection over action values, an arbitrarily small change in the estimated values can cause the $\argmax$ to switch from one action to another, producing a discontinuous change in the policy \citep[p.~324]{suttonReinforcementLearningIntroduction2020}.
+
+For the episodic case, such as Pong, the policy parameter $\theta$ is optimized by a gradient ascent on a scalar performance measure defined as the value of the start state:
 \begin{equation}
 	J(\theta) \doteq v_{\pi_{\theta}}(s_0),
 \end{equation}
-where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$, the policy determined by $\theta$ and $s_0$ is the start state. $J(\theta)$ is the expected return and the goal is to find the $\theta$ that maximizes it. The gradient, $\nabla J(\theta)$, however, is not obvious since changing $\theta$ changes both the action selection and the state distribution that the policy induces.
+where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$ determined by $\theta$, and $s_0$ is the start state. The gradient $\nabla J(\theta)$, however, is not straightforward to compute since changing $\theta$ changes both the action selection and the state distribution that the policy induces \citep[p.~324]{suttonReinforcementLearningIntroduction2020}.To compute the effect of the policy on the state distribution the environment dynamics is required which is unknown in 
 
 \section{REINFORCE and the Variance Problem}
 
