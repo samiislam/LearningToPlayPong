@@ -35,5 +35,6 @@ When $b(S_t) \approx v_\pi(S_t)$, the quantity $(G_t - b(S_t))$ measures how muc
 
 \section{Actor-Critic Methods}
 \label{sec:actorcriticmethods}
+The same bootstrapping principle introduced for the action-value function in Section~\ref{sec:fromqlearningtodqn} can be applied here. Rather than waiting until the end of the episode to compute $G_t$, the return can be approximated by the immediate reward and an estimate of the next state's value, giving the one-step \acrshort{td} target $R_{t+1} + \gamma \hat{V}(S_{t+1}, w)$.
 
 \section{The Advantage Function and A2C}
