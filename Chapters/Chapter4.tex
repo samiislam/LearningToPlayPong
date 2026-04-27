@@ -17,8 +17,23 @@ where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$ determine
 where $\mu(s)$ is the on-policy state distribution that appears only as a weighting and does not need to be differentiated. By sampling transitions through interaction with the environment, the agent visits states according to $\mu(s)$ naturally, which allows the gradient to be estimated without knowledge of the environment dynamics.
 
 \section{REINFORCE and the Variance Problem}
-The policy gradient theorem contains $ q_\pi(s, a)$ which cannot be computed directly since it is the expected return for taking action $a$ in state $s$ and following $\pi$ thereafter. As can be seen in \eqref{eq:action_value_function}, a single sample return $G_t$ is an unbiased estimate by definition.
+The policy gradient theorem contains $ q_\pi(s, a)$ which requires the expectation over all future rewards under $\pi$ and is therefore unavailable in closed form. A gradient estimator can be obtained in two steps. First, the sum over actions is rewritten using the log-likelihood trick. Second, the unknown $q_\pi$ is replaced by a sample return $G_t$ from \eqref{eq:action_value_function}. Applying both steps to \eqref{eq:policy_gradient_theorem} gives
+\begin{align}
+	\nabla J(\theta) &= \mathbb{E}_\pi \bigg[\sum_a q_\pi(S_t, a)\,\nabla \pi(a\,|\,S_t, \theta)\bigg] \nonumber \\
+	&= \mathbb{E}_\pi \bigg[q_\pi(S_t, A_t) \frac{\nabla \pi(A_t\,|\,S_t, \theta)}{\pi(A_t\,|\,S_t, \theta)} \bigg] \nonumber \\
+	&=  \mathbb{E}_\pi \bigg[G_t \nabla \ln \pi(A_t\,|S_t, \theta) \bigg].
+\end{align}
+This final expression is the REINFORCE gradient estimator \citep[p.~327]{suttonReinforcementLearningIntroduction2020}. It requires only quantities available from a single trajectory, namely the return $G_t$, the state $S_t$, the action taken $A_t$, and the gradient of the log-policy.
+
+Since $G_t$ is a full Monte Carlo return, it accumulates the randomness of every subsequent action and state transition from timestep $t$ to the end of the episode. In Pong, where episodes run for hundreds of frames and rewards are sparse, two trajectories starting from the same state can produce vastly different returns simply because the stochastic policy may select different actions at each subsequent timestep. The resulting gradient estimate $\nabla J(\theta)$ is correct in expectation but extremely noisy, requiring many episodes to converge.
+
+\citet[p.~329]{suttonReinforcementLearningIntroduction2020} shows that subtracting a state dependent baseline $b(S_t)$ from $G_t$ does not change the expected gradient but reduces its variance. The modified gradient estimator becomes
+\begin{equation}
+	\nabla J(\theta) = \mathbb{E}_\pi \bigg[(G_t - b(S_t))\, \nabla \ln \pi(A_t\,|\,S_t, \theta) \bigg].
+\end{equation}
+When $b(S_t) \approx v_\pi(S_t)$, the quantity $(G_t - b(S_t))$ measures how much better a specific trajectory was compared to the average from state $S_t$. This centers the gradient signal around zero rather than around the potentially large absolute return, reducing the magnitude of fluctuations across episodes. However, the baseline does not address the root cause of the variance. The return $G_t$ remains a full Monte Carlo estimate that depends on all future rewards from timestep $t$ onward. Section~\ref{sec:actorcriticmethods} resolves this by replacing $G_t$ with a bootstrapped target.
 
 \section{Actor-Critic Methods}
+\label{sec:actorcriticmethods}
 
 \section{The Advantage Function and A2C}
