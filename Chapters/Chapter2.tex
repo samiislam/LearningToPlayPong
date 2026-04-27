@@ -39,7 +39,7 @@ The expected return depends on how the agent selects actions. The mapping betwee
 	v_\pi\left(s\right) \doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s\right] = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\,|\,S_t = s \right],\;\,\text{for all}\, s \in \mathcal{S},
 \end{equation}
 where $\mathbb{E}_\pi[\cdot]$ represents the expected value of a random variable when the policy $\pi$ is followed, and $t$ is any time step. The function $v_\pi\left(s\right)$ is called the state-value function. An equivalent function exists for when taking action $a$ in state $s$ following policy $\pi$ and is called the action-value function denoted as:
-\begin{equation}
+\begin{equation}\label{eq:action_value_function}
 	q_\pi\left(s, a\right) \doteq \mathbb{E}_\pi\left[G_t\,|\,S_t = s, A_t = a\right] = \mathbb{E}_\pi\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\,|\,S_t = s, A_t = a\right],\;\,\text{for all}\, s \in \mathcal{S},\,\text{and}\, a \in \mathcal{A}(s).
 \end{equation}
 

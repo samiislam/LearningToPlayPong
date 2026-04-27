@@ -10,9 +10,14 @@ For the episodic case, such as Pong, the policy parameter $\theta$ is optimized 
 \begin{equation}
 	J(\theta) \doteq v_{\pi_{\theta}}(s_0),
 \end{equation}
-where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$ determined by $\theta$, and $s_0$ is the start state. The gradient $\nabla J(\theta)$, however, is not straightforward to compute since changing $\theta$ changes both the action selection and the state distribution that the policy induces \citep[p.~324]{suttonReinforcementLearningIntroduction2020}.To compute the effect of the policy on the state distribution the environment dynamics is required which is unknown in 
+where $v_{\pi_{\theta}}$ is the true value function for $\pi_{\theta}$ determined by $\theta$, and $s_0$ is the start state. The gradient $\nabla J(\theta)$, however, is not straightforward to compute since changing $\theta$ changes both the action selection and the state distribution that the policy induces \citep[p.~324]{suttonReinforcementLearningIntroduction2020}. Computing the effect of the policy on the state distribution requires the environment dynamics, which are typically unknown \citep[p.~325]{suttonReinforcementLearningIntroduction2020}. A solution to this is provided by the policy gradient theorem:
+\begin{equation}\label{eq:policy_gradient_theorem}
+	\nabla J(\theta) \propto \sum_s \mu(s) \sum_a q_\pi(s, a)\,\nabla \pi(a\,|\,s, \theta),
+\end{equation}
+where $\mu(s)$ is the on-policy state distribution that appears only as a weighting and does not need to be differentiated. By sampling transitions through interaction with the environment, the agent visits states according to $\mu(s)$ naturally, which allows the gradient to be estimated without knowledge of the environment dynamics.
 
 \section{REINFORCE and the Variance Problem}
+The policy gradient theorem contains $ q_\pi(s, a)$ which cannot be computed directly since it is the expected return for taking action $a$ in state $s$ and following $\pi$ thereafter. As can be seen in \eqref{eq:action_value_function}, a single sample return $G_t$ is an unbiased estimate by definition.
 
 \section{Actor-Critic Methods}
 
