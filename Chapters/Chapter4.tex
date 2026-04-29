@@ -35,6 +35,19 @@ When $b(S_t) \approx v_\pi(S_t)$, the quantity $(G_t - b(S_t))$ measures how muc
 
 \section{Actor-Critic Methods}
 \label{sec:actorcriticmethods}
-The same bootstrapping principle introduced for the action-value function in Section~\ref{sec:fromqlearningtodqn} can be applied here. Rather than waiting until the end of the episode to compute $G_t$, the return can be approximated by the immediate reward and an estimate of the next state's value, giving the one-step \acrshort{td} target $R_{t+1} + \gamma \hat{V}(S_{t+1}, w)$.
+The same bootstrapping principle introduced for the action-value function in Section~\ref{sec:fromqlearningtodqn} can be applied here. Rather than waiting until the end of the episode to compute $G_t$, the return can be approximated by the immediate reward and an estimate of the next state's value, giving the one-step \acrshort{td} target $R_{t+1} + \gamma \hat{V}(S_{t+1}, w)$. \citet[p.~331]{suttonReinforcementLearningIntroduction2020} formulates the one-step update in the actor-critic methods as follows:
+\begin{equation}\label{eq:one_step_update}
+	\theta_{t+1} \doteq \theta_t + \alpha_{\theta}\,\delta_t \nabla \ln \pi(A_t\,|\,S_t, \theta),
+\end{equation}
+where $\delta_t = R_{t+1} + \gamma \hat{V}(S_{t+1}, w) - \hat{V}(S_t, w)$ is the \acrshort{td} error. Since the \acrshort{td} error depends only on the immediate reward and the value estimates at two consecutive states, it no longer accumulates the variance of all future rewards. The resulting gradient estimate has vastly lower variance but introduces a bias because $\hat{V}$ is a learned approximation that may differ from the true value function $v_\pi$.
+
+The actor-critic method implied by equation~\eqref{eq:one_step_update} has two learnable components. The actor is the policy $\pi(a\,|\,s, \theta)$, parameterized by $\theta$, which decides which action to take. The critic is the value function $\hat{V}(s, w)$, parameterized by w, which estimates the expected return from each state under the current policy. The critic's update is a semi-gradient \acrshort{td} \citep[p.~203]{suttonReinforcementLearningIntroduction2020}:
+\begin{equation}
+	w_{t+1} \doteq w_t + \alpha_{w}\,\delta_t \nabla \hat{V}(S_t, w),
+\end{equation}
+where the gradient is taken only with respect to $\hat{V}(S_t, w)$ and the bootstrapped target is treated as a constant.
+
+The actor-critic architecture differs structurally from \acrshort{dqn}. In \acrshort{dqn} the neural network is the entire decision-maker. It outputs $Q$-values, and the policy falls out via $\argmax$. In actor-critic architecture the network splits into an actor and a critic component each with a distinct role. The critic supports the actor but does not directly determine actions. Section~\ref{sec:algandstructdifferences} compares these structural differences in detail.
+
 
 \section{The Advantage Function and A2C}
