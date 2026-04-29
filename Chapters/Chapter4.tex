@@ -51,3 +51,11 @@ The actor-critic architecture differs structurally from \acrshort{dqn}. In \acrs
 
 
 \section{The Advantage Function and A2C}
+\label{sec:advantagefunctionanda2c}
+
+The \acrshort{td} error $\delta_t$ used in section~\ref{sec:actorcriticmethods} is actually an estimate of a specific quantity known as the advantage function defined as $A_\pi(s, a) = q_\pi(s, a) - v_\pi(s)$. It measures how much better action $a$ is compared to the average action under $\pi$ in state $s$. If $A > 0$, the action is above average and should be reinforced. If  $A < 0$, it is below average and should be suppressed. This is more informative than using $q_\pi$ alone because it normalizes by the state's baseline value. $\delta_t$ estimates $A_\pi$ in expectation:
+\begin{align}
+	\mathbb{E}[\delta_t\,|\, S_t = s, A_t = a] &= \mathbb{E}[R_{t+1} + \gamma\,v_\pi(S_{t+1})\,|\,s, a] - v_\pi(s) \nonumber \\
+	&= q_\pi(s,a) - v_\pi(s) \nonumber \\
+	&= A_\pi(s,a)
+\end{align}
