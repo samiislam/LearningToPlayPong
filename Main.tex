@@ -99,6 +99,16 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 \newacronym{mdp}{MDP}{Markov Decision Process}
 \newacronym{sgd}{SGD}{Stochastic Gradient Descent}
 
+\usepackage{titlesec}
+\titleclass{\chapter}{straight}
+\titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\thechapter.}{1em}{}
+\titlespacing*{\chapter}{0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+
+% Add these:
+\titleformat{\chapter}[hang]{\normalfont\Large\bfseries}{\thechapter}{1em}{}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{1em}{}
+
 % SAMI
 
 \begin{document}
@@ -110,8 +120,8 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 \setcounter{page}{2} %starting with page 2 (page 1 is the titel)
 
 \tableofcontents
+\clearpage
 \listoffigures
-
 \clearpage
 
 %Count chapters with arabic numbers and not roman numbers
@@ -120,13 +130,13 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\include{Chapters/Chapter1}
-\include{Chapters/Chapter2}
-\include{Chapters/Chapter3}
-\include{Chapters/Chapter4}
-\include{Chapters/Chapter5}
-\include{Chapters/Chapter6}
-\include{Conclusion}
+\input{Chapters/Chapter1}
+\input{Chapters/Chapter2}
+\input{Chapters/Chapter3}
+\input{Chapters/Chapter4}
+\input{Chapters/Chapter5}
+\input{Chapters/Chapter6}
+\input{Conclusion}
 
 \appendix
 \input{Chapters/AppendixA}
@@ -135,6 +145,7 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 
 \clearpage
 \printnoidxglossary[type=\acronymtype]
+\clearpage
 % ---- Bibliography ----
 %
 % BibTeX users should specify bibliography style 
