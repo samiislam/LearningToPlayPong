@@ -23,12 +23,12 @@ The policy gradient theorem contains $ q_\pi(s, a)$ which requires the expectati
 	&= \mathbb{E}_\pi \bigg[q_\pi(S_t, A_t) \frac{\nabla \pi(A_t\,|\,S_t, \theta)}{\pi(A_t\,|\,S_t, \theta)} \bigg] \nonumber \\
 	&=  \mathbb{E}_\pi \bigg[G_t \nabla \ln \pi(A_t\,|S_t, \theta) \bigg].
 \end{align}
-This final expression is the REINFORCE gradient estimator \citep[p.~327]{suttonReinforcementLearningIntroduction2020}. It requires only quantities available from a single trajectory, namely the return $G_t$, the state $S_t$, the action taken $A_t$, and the gradient of the log-policy.
+This final expression is the REINFORCE gradient estimator \citep[p.~327]{williamsSimpleStatisticalGradientfollowing1992, suttonReinforcementLearningIntroduction2020}. It requires only quantities available from a single trajectory, namely the return $G_t$, the state $S_t$, the action taken $A_t$, and the gradient of the log-policy.
 
 Since $G_t$ is a full Monte Carlo return, it accumulates the randomness of every subsequent action and state transition from timestep $t$ to the end of the episode. In Pong, where episodes run for hundreds of frames and rewards are sparse, two trajectories starting from the same state can produce vastly different returns simply because the stochastic policy may select different actions at each subsequent timestep. The resulting gradient estimate $\nabla J(\theta)$ is correct in expectation but extremely noisy, requiring many episodes to converge.
 
-\citet[p.~329]{suttonReinforcementLearningIntroduction2020} shows that subtracting a state dependent baseline $b(S_t)$ from $G_t$ does not change the expected gradient but reduces its variance. The modified gradient estimator becomes
-\begin{equation}
+\citet[p.~329]{suttonReinforcementLearningIntroduction2020} shows that subtracting a state dependent baseline $b(S_t)$ \citep{williamsSimpleStatisticalGradientfollowing1992} from $G_t$ does not change the expected gradient but reduces its variance. The modified gradient estimator becomes
+\begin{equation}\label{eq:reinforce_baseline}
 	\nabla J(\theta) = \mathbb{E}_\pi \bigg[(G_t - b(S_t))\, \nabla \ln \pi(A_t\,|\,S_t, \theta) \bigg].
 \end{equation}
 When $b(S_t) \approx v_\pi(S_t)$, the quantity $(G_t - b(S_t))$ measures how much better a specific trajectory was compared to the average from state $S_t$. This centers the gradient signal around zero rather than around the potentially large absolute return, reducing the magnitude of fluctuations across episodes. However, the baseline does not address the root cause of the variance. The return $G_t$ remains a full Monte Carlo estimate that depends on all future rewards from timestep $t$ onward. Section~\ref{sec:actorcriticmethods} resolves this by replacing $G_t$ with a bootstrapped target.
@@ -53,9 +53,29 @@ The actor-critic architecture differs structurally from \acrshort{dqn}. In \acrs
 \section{The Advantage Function and A2C}
 \label{sec:advantagefunctionanda2c}
 
-The \acrshort{td} error $\delta_t$ used in section~\ref{sec:actorcriticmethods} is actually an estimate of a specific quantity known as the advantage function defined as $A_\pi(s, a) = q_\pi(s, a) - v_\pi(s)$. It measures how much better action $a$ is compared to the average action under $\pi$ in state $s$. If $A > 0$, the action is above average and should be reinforced. If  $A < 0$, it is below average and should be suppressed. This is more informative than using $q_\pi$ alone because it normalizes by the state's baseline value. $\delta_t$ estimates $A_\pi$ in expectation:
+The \acrshort{td} error $\delta_t$ used in section~\ref{sec:actorcriticmethods} is actually an estimate of a specific quantity known as the advantage function \citep{mnihAsynchronousMethodsDeep2016},
+\begin{equation}
+	A_\pi(s, a) = q_\pi(s, a) - v_\pi(s).
+\end{equation}
+ 
+ It measures how much better action $a$ is compared to the average over all actions available in state $s$ under $\pi$. If $A > 0$, the action is above average and should be reinforced. If  $A < 0$, it is below average and should be suppressed. This is more informative than using $q_\pi$ alone because it adjusts for the state's baseline value. 
+ 
+The REINFORCE update with baseline from \eqref{eq:reinforce_baseline} was already estimating this quantity implicitly. The sample return $G_t$ is an estimate of $q_\pi(S_t, A_t)$ and the baseline $b(S_t)$ is an estimate of $v_\pi(S_t)$, making the difference $(G_t - b(S_t))$ a Monte Carlo estimate of the advantage \citep{mnihAsynchronousMethodsDeep2016}. The actor-critic framework of Section~\ref{sec:actorcriticmethods} replaces this Monte Carlo estimate with the TD error $\delta_t = R_{t+1} + \gamma \hat{V}(S_{t+1}, w) - \hat{V}(S_t, w)$ which estimates the same quantity. In expectation:
 \begin{align}
 	\mathbb{E}[\delta_t\,|\, S_t = s, A_t = a] &= \mathbb{E}[R_{t+1} + \gamma\,v_\pi(S_{t+1})\,|\,s, a] - v_\pi(s) \nonumber \\
 	&= q_\pi(s,a) - v_\pi(s) \nonumber \\
 	&= A_\pi(s,a)
 \end{align}
+
+REINFORCE with baseline and actor-critic are therefore not two unrelated algorithms but two estimators of the same underlying quantity. They differ only in how they estimate the advantage: the former uses a full Monte Carlo return with high variance and no bias, while the latter uses a bootstrapped TD target with lower variance at the cost of bias from the learned value function.
+
+The advantage actor-critic framework formalizes this and adds two practical enhancements that make the method viable on visually complex environment like Pong. The first is synchronous parallel data collection. Instead of training on transitions from a single environment, \acrshort{a2c} runs $N$ copies of the environment simultaneously, each executing the current policy $\pi(\cdot\,|\,\cdot, \theta)$ independently. At each update step, the agent collects short rollouts of length $n$ from all $N$ environments, computes the advantage estimate $\delta_t$ for each transition, and averages the resulting gradients. Averaging over $N$ independent gradient estimates reduces the variance of the update by a factor of approximately $\sqrt{N}$, partially compensating for the on-policy requirement that each transition can only be used once. The synchronous design, in contrast to the asynchronous variant \acrshort{a3c} \citep{mnihAsynchronousMethodsDeep2016}, avoids stale gradients by ensuring all environments use the same policy parameters at each update.
+
+The second enhancement is entropy regularization. Without explicit encouragement to explore, the policy can collapse to a near-deterministic distribution early in training, before the critic has learned accurate value estimates. To prevent this, \acrshort{a2c} adds the entropy of the policy $H(\pi(\cdot\,|\,S_t, \theta))$ to the objective, a technique originally proposed by \citet{williamsFunctionOptimizationUsing1991} and adopted in the \acrshort{a3c} framework by \citet{mnihAsynchronousMethodsDeep2016}. The combined loss for the actor becomes
+\begin{equation}\label{eq:a2c_actor_loss}
+	L_\text{actor}(\theta) = -\mathbb{E}_\pi\Big[\delta_t \ln \pi(A_t\,|\,S_t, \theta) + \beta\, H\big(\pi(\cdot\,|\,S_t, \theta)\big)\Big],
+\end{equation}
+where $\beta$ controls the strength of the regularization. A high entropy means the policy spreads probability across multiple actions, encouraging exploration. As training progresses and the critic's estimates improve, the policy naturally sharpens toward higher-advantage actions while the entropy term prevents premature commitment. This serves a similar purpose to $\epsilon$-greedy exploration in DQN but arises from the policy parameterization itself rather than being imposed externally.
+In practice, the actor and critic share a convolutional feature extraction backbone and split into two output heads: a softmax layer producing the policy $\pi(a\,|\,s, \theta)$ and a single linear output estimating $\hat{V}(s, w)$. Sharing the lower layers is efficient because both components need to extract the same visual features from the raw pixel input. The architectural details for Pong are presented in Section~\ref{sec:a2c_results}.
+
+Chapters \ref{chap:dqn} and \ref{chap:a2c} have developed two distinct approaches to the same problem. \acrshort{dqn} learns an action-value function and extracts the policy implicitly through an argmax operation, producing a deterministic mapping from states to actions. \acrshort{a2c} learns the policy explicitly as a probability distribution over actions, guided by a critic that evaluates each decision through the advantage function. Both methods bootstrap from learned value estimates, but they differ in what they bootstrap (Q-values versus state values), how they collect experience (off-policy replay versus on-policy parallel rollouts), and how they explore (externally imposed $\epsilon$-greedy decay versus entropy regularization intrinsic to the policy). Chapter \ref{chap:pong} applies both methods to the same Pong environment, providing the empirical basis for a direct comparison along these axes.
