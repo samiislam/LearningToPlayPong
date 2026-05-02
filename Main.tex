@@ -77,6 +77,36 @@ numbers=noendperiod, % Don't add a period at the end of a chapter number
 % This must come after amsmath package inclusion
 \usepackage[hidelinks]{hyperref}
 
+% listing + configuration
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	numbersep=4pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2,
+	frame=lines
+}
+
+\lstset{style=mystyle}
+% end listing
+
 \newtheorem*{theorem}{Theorem}
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
