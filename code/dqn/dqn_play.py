@@ -10,18 +10,14 @@ from core import model as dqn_model
 
 import collections
 
-DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", required=True, help="Model file to load")
-    parser.add_argument("-e", "--env", default=DEFAULT_ENV_NAME,
-                        help="Environment name to use, default=" + DEFAULT_ENV_NAME)
     parser.add_argument("-r", "--record", required=True, help="Directory for video")
     args = parser.parse_args()
 
-    env = wrappers.make_env(args.env, render_mode="rgb_array")
+    env = wrappers.make_env(gym.make("ALE/Pong-v5", frameskip=1, repeat_action_probability=0.0,
+                                     render_mode="rgb_array"))
     env = gym.wrappers.RecordVideo(env, video_folder=args.record)
     assert isinstance(env.observation_space, gym.spaces.Box)
     assert isinstance(env.action_space, gym.spaces.Discrete)

@@ -24,7 +24,6 @@ from core import wrappers
 
 
 BATCH_SIZE = 64
-DEFAULT_ENV_NAME = "PongNoFrameskip-v4"
 GAMMA = 0.99
 LEARNING_RATE = 1e-4
 MEAN_REWARD_BOUND = 19
@@ -181,8 +180,6 @@ def calc_loss(batch: list[Experience], net: dqn_model.DQN, tgt_net: dqn_model.DQ
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dev", default="cuda", help="Device name, default=cuda")
-    parser.add_argument("--env", default=DEFAULT_ENV_NAME,
-                        help="Name of the environment, default=" + DEFAULT_ENV_NAME)
     args = parser.parse_args()
     device = torch.device(args.dev)
 
@@ -192,8 +189,11 @@ if __name__ == "__main__":
     torch.manual_seed(SEED)
     torch.cuda.manual_seed(SEED)
 
-    env = gym.vector.AsyncVectorEnv(
-        [wrappers.make_env_fn(args.env) for _ in range(N_ENVS)])
+    env_factories = [
+        lambda: wrappers.make_env(gym.make("ALE/Pong-v5", frameskip=1, repeat_action_probability=0.0))
+        for _ in range(N_ENVS)
+    ]
+    env = gym.vector.AsyncVectorEnv(env_factories)
     assert isinstance(env.single_observation_space, gym.spaces.Box)
     assert isinstance(env.single_action_space, gym.spaces.Discrete)
     raw_net = dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device)
@@ -201,8 +201,9 @@ if __name__ == "__main__":
     tgt_net = cast(dqn_model.DQN, torch.compile(
         dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device),
         backend="cudagraphs"))
-    writer = SummaryWriter(comment="-" + args.env + "-vanilla")
+    writer = SummaryWriter(comment="-pong-dqn")
     print(net)
+    print(f"Actions: {env.single_action_space.n}")
 
     buffer = ExperienceBuffer(REPLAY_SIZE)
     agent = Agent(env, buffer)

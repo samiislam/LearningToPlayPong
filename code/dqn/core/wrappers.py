@@ -1,14 +1,17 @@
-import gymnasium as gym
-from gymnasium import spaces
 import collections
-import numpy as np
+
 import ale_py
-from stable_baselines3.common import atari_wrappers
+import gymnasium as gym
+import numpy as np
+from gymnasium import spaces
+from gymnasium.wrappers import AtariPreprocessing
 
 gym.register_envs(ale_py)
 
 
 class ImageToPyTorch(gym.ObservationWrapper):
+    """Convert observations from HWC to CHW layout expected by PyTorch."""
+
     def __init__(self, env):
         super(ImageToPyTorch, self).__init__(env)
         obs = self.observation_space
@@ -24,21 +27,26 @@ class ImageToPyTorch(gym.ObservationWrapper):
 
 
 class BufferWrapper(gym.ObservationWrapper):
+    """Stack the last *n_steps* frames into a single observation."""
+
     def __init__(self, env, n_steps):
         super(BufferWrapper, self).__init__(env)
         obs = env.observation_space
         assert isinstance(obs, spaces.Box)
         new_obs = gym.spaces.Box(
-            obs.low.repeat(n_steps, axis=0), obs.high.repeat(n_steps, axis=0),
+            obs.low.repeat(n_steps, axis=0),
+            obs.high.repeat(n_steps, axis=0),
             dtype=obs.dtype.type)
         self.observation_space = new_obs
         self.buffer = collections.deque(maxlen=n_steps)
 
-    def reset(self, *, seed: int | None = None, options: dict[str, object] | None = None):
+    def reset(self, *, seed: int | None = None,
+              options: dict | None = None):
         assert self.buffer.maxlen is not None
-        assert isinstance(self.env.observation_space, spaces.Box)
         for _ in range(self.buffer.maxlen - 1):
-            self.buffer.append(self.env.observation_space.low)
+            obs_space = self.env.observation_space
+            assert isinstance(obs_space, spaces.Box)
+            self.buffer.append(obs_space.low)
         obs, extra = self.env.reset(seed=seed, options=options)
         return self.observation(obs), extra
 
@@ -47,15 +55,10 @@ class BufferWrapper(gym.ObservationWrapper):
         return np.concatenate(self.buffer)
 
 
-def make_env(env_name: str, **kwargs):
-    env = gym.make(env_name, **kwargs)
-    env = atari_wrappers.AtariWrapper(env, clip_reward=False, noop_max=0)
+def make_env(env):
+    """Apply standard Atari preprocessing: downscale, grayscale, frame stack."""
+    env = AtariPreprocessing(env, noop_max=0, terminal_on_life_loss=True,
+                             grayscale_obs=True, grayscale_newaxis=True, scale_obs=False)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, n_steps=4)
     return env
-
-
-def make_env_fn(env_name: str, **kwargs):
-    def _make():
-        return make_env(env_name, **kwargs)
-    return _make
