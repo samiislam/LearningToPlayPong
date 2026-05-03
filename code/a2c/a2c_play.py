@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""Greedy evaluation of a trained A2C checkpoint on Pong.
+
+Loads weights produced by `a2c_pong.py` (saved as `a2c-model-best.dat`
+whenever a new best 100-episode mean reward is reached) into a fresh
+`AtariA2C`, plays a single Pong episode by taking the argmax over the
+policy-head logits (no sampling, no entropy exploration), records the
+rendered frames to disk via `gym.wrappers.RecordVideo`, and prints the
+final score plus a histogram of action selections.
+"""
 import gymnasium as gym
 import argparse
 import numpy as np

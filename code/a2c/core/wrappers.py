@@ -1,3 +1,18 @@
+"""Gymnasium observation wrappers for ALE/Atari environments (A2C).
+
+Each class wraps a `gym.Env` (typically the raw `ALE/Pong-v5` env) and adapts
+its observation stream so the A2C network can consume it:
+
+  - `ImageToPyTorch` -- reorders observation axes from HWC (Atari/OpenCV
+    layout) to CHW (the layout `torch.nn.Conv2d` expects).
+  - `BufferWrapper` -- stacks the last `n_steps` preprocessed frames into a
+    single observation, giving the network temporal context (the m=4 stack
+    inherited from Mnih et al. 2015 / used in Mnih et al. 2016 A3C).
+  - `make_env` -- composes Gymnasium's `AtariPreprocessing` (frame max-pool,
+    grayscale, 84x84 resize, terminal-on-life-loss) with the two wrappers
+    above to produce the full 84x84x4 input pipeline used during training
+    and evaluation.
+"""
 import collections
 
 import ale_py
