@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Advantage Actor-Critic (A2C) on Pong.
 
 Implements the synchronous A2C variant of "Asynchronous Methods for Deep
@@ -99,7 +98,10 @@ if __name__ == "__main__":
     device = torch.device(args.dev)
 
     env_factories = [
-        lambda: wrappers.make_env(gym.make("ALE/Pong-v5", frameskip=1, repeat_action_probability=0.0))
+        lambda: wrappers.make_env(
+            gym.make("ALE/Pong-v5", 
+                     frameskip=1, 
+                     repeat_action_probability=0.0))
         for _ in range(NUM_ENVS)
     ]
     if args.use_async:

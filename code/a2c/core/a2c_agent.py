@@ -111,7 +111,8 @@ class Agent:
 
     @torch.no_grad()
     def play_step(self) -> tuple[list[Experience], list[float]]:
-        """Advance all envs by one step; return new experiences and any finished episode rewards."""
+        """Advance all envs by one step; return new experiences 
+        and any finished episode rewards."""
         states_t = torch.as_tensor(self.states, dtype=torch.float32).to(self.device)
         logits_t, _ = self.net(states_t)
         probs = F.softmax(logits_t, dim=1).cpu().numpy()

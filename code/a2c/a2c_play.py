@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Greedy evaluation of a trained A2C checkpoint on Pong.
 
 Loads weights produced by `a2c_pong.py` (saved as `a2c-model-best.dat`
@@ -27,8 +26,12 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--record", required=True, help="Directory for video")
     args = parser.parse_args()
 
-    env = wrappers.make_env(gym.make("ALE/Pong-v5", frameskip=1, repeat_action_probability=0.0,
-                                     render_mode="rgb_array"))
+    env = wrappers.make_env(
+        gym.make("ALE/Pong-v5", 
+                 frameskip=1, 
+                 repeat_action_probability=0.0,
+                 render_mode="rgb_array"))
+    
     env = gym.wrappers.RecordVideo(env, video_folder=args.record)
 
     assert isinstance(env.observation_space, gym.spaces.Box)

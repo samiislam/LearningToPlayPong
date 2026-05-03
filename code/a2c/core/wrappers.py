@@ -72,8 +72,13 @@ class BufferWrapper(gym.ObservationWrapper):
 
 def make_env(env):
     """Apply standard Atari preprocessing: downscale, grayscale, frame stack."""
-    env = AtariPreprocessing(env, noop_max=0, terminal_on_life_loss=True,
-                             grayscale_obs=True, grayscale_newaxis=True, scale_obs=False)
+    env = AtariPreprocessing(
+        env, 
+        noop_max=0, 
+        terminal_on_life_loss=True,
+        grayscale_obs=True, 
+        grayscale_newaxis=True, 
+        scale_obs=False)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, n_steps=4)
     return env

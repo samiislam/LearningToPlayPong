@@ -74,7 +74,8 @@ class Agent:
     @torch.no_grad()
     def play_step(self, net: dqn_model.DQN, device: torch.device,
                   epsilon: float = 0.0) -> list[tuple[float, int]]:
-        """One environment step per env, then store transitions in D (Algorithm 1, inner loop).
+        """One environment step per env, then store transitions 
+        in D (Algorithm 1, inner loop).
 
         Implements the inner-loop lines:
             "With probability eps select a random action a_t,
@@ -108,13 +109,17 @@ class Agent:
             else:
                 last_new_state = new_states[i]
             exp = Experience(
-                state=self.states[i], action=int(actions[i]), reward=float(rewards[i]),
-                done_trunc=done_trunc, new_state=last_new_state
+                state=self.states[i], 
+                action=int(actions[i]), 
+                reward=float(rewards[i]),
+                done_trunc=done_trunc, 
+                new_state=last_new_state
             )
             self.exp_buffer.append(exp)
 
             if done_trunc:
-                done_episodes.append((float(self.total_rewards[i]), int(self.total_steps[i])))
+                done_episodes.append((float(self.total_rewards[i]), 
+                                      int(self.total_steps[i])))
                 self.total_rewards[i] = 0.0
                 self.total_steps[i] = 0
 
@@ -136,6 +141,8 @@ def batch_to_tensors(batch: list[Experience], device: torch.device) -> BatchTens
     rewards_t = torch.FloatTensor(rewards)
     dones_t = torch.BoolTensor(dones)
     new_states_t = torch.as_tensor(np.asarray(new_state))
-    return states_t.to(device, non_blocking=True), actions_t.to(device, non_blocking=True), \
-           rewards_t.to(device, non_blocking=True), dones_t.to(device, non_blocking=True), \
+    return states_t.to(device, non_blocking=True), \
+           actions_t.to(device, non_blocking=True), \
+           rewards_t.to(device, non_blocking=True), \
+           dones_t.to(device, non_blocking=True), \
            new_states_t.to(device, non_blocking=True)

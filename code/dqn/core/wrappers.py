@@ -3,12 +3,12 @@
 Each class wraps a `gym.Env` (typically the raw `ALE/Pong-v5` env) and adapts
 its observation stream so the DQN can consume it:
 
-  - `ImageToPyTorch` — reorders observation axes from HWC (Atari/OpenCV layout)
+  - `ImageToPyTorch` - reorders observation axes from HWC (Atari/OpenCV layout)
     to CHW (the layout `torch.nn.Conv2d` expects).
-  - `BufferWrapper` — stacks the last `n_steps` preprocessed frames into a
+  - `BufferWrapper` - stacks the last `n_steps` preprocessed frames into a
     single observation, giving the network temporal context (the m=4 stack
     from Mnih et al. 2015).
-  - `make_env` — composes Gymnasium's `AtariPreprocessing` (frame max-pool,
+  - `make_env` - composes Gymnasium's `AtariPreprocessing` (frame max-pool,
     grayscale, 84x84 resize, terminal-on-life-loss) with the two wrappers
     above to produce the full 84x84x4 input pipeline used during training
     and evaluation.
@@ -78,8 +78,11 @@ def make_env(env):
     to 84x84. BufferWrapper then stacks the m=4 most recent preprocessed frames
     into the network input, matching the 84x84x4 tensor described in the paper.
     """
-    env = AtariPreprocessing(env, noop_max=0, terminal_on_life_loss=True,
-                             grayscale_obs=True, grayscale_newaxis=True, scale_obs=False)
+    env = AtariPreprocessing(env, noop_max=0, 
+                             terminal_on_life_loss=True,
+                             grayscale_obs=True, 
+                             grayscale_newaxis=True, 
+                             scale_obs=False)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, n_steps=4)
     return env

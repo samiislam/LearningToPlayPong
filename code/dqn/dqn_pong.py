@@ -82,20 +82,33 @@ if __name__ == "__main__":
     torch.cuda.manual_seed(SEED)
 
     env_factories = [
-        lambda: wrappers.make_env(gym.make("ALE/Pong-v5", frameskip=1, repeat_action_probability=0.0))
+        lambda: wrappers.make_env(
+            gym.make("ALE/Pong-v5", 
+                     frameskip=1, 
+                     repeat_action_probability=0.0))
         for _ in range(N_ENVS)
     ]
     env = gym.vector.AsyncVectorEnv(env_factories)
     assert isinstance(env.single_observation_space, gym.spaces.Box)
     assert isinstance(env.single_action_space, gym.spaces.Discrete)
+
     # Algorithm 1: "Initialize action-value function Q with random weights theta"
-    raw_net = dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device)
+    raw_net = dqn_model.DQN(
+        env.single_observation_space.shape, 
+        env.single_action_space.n).to(device)
+    
     net = cast(dqn_model.DQN, torch.compile(raw_net, backend="cudagraphs"))
-    # Algorithm 1: "Initialize target action-value function Q_hat with weights theta- = theta"
+    
+    # Algorithm 1: "Initialize target action-value function Q_hat 
+    # with weights theta- = theta"
     tgt_net = cast(dqn_model.DQN, torch.compile(
-        dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device),
+        dqn_model.DQN(
+            env.single_observation_space.shape, 
+            env.single_action_space.n).to(device),
         backend="cudagraphs"))
+    
     writer = SummaryWriter(comment="-pong-dqn")
+    
     print(net)
     print(f"Actions: {env.single_action_space.n}")
 
@@ -120,7 +133,8 @@ if __name__ == "__main__":
     while not solved:
         frame_idx += N_ENVS
         # Linear epsilon annealing from EPSILON_START to EPSILON_FINAL
-        epsilon = max(EPSILON_FINAL, EPSILON_START - frame_idx / EPSILON_DECAY_LAST_FRAME)
+        epsilon = max(
+            EPSILON_FINAL, EPSILON_START - frame_idx / EPSILON_DECAY_LAST_FRAME)
 
         # Inner-loop steps: select a_t (eps-greedy), execute, store transition in D
         episodes = agent.play_step(net, device, epsilon)
@@ -157,8 +171,10 @@ if __name__ == "__main__":
         if len(buffer) < REPLAY_START_SIZE:
             continue
 
-        # Algorithm 1: "Sample random minibatch of transitions (phi_j, a_j, r_j, phi_{j+1}) from D"
-        # then "Perform a gradient descent step on (y_j - Q(phi_j, a_j; theta))^2 w.r.t. theta"
+        # Algorithm 1: "Sample random minibatch of transitions: 
+        # (phi_j, a_j, r_j, phi_{j+1}) from D"
+        # then "Perform a gradient descent step on: 
+        # (y_j - Q(phi_j, a_j; theta))^2 w.r.t. theta"
         optimizer.zero_grad()
         batch = buffer.sample(BATCH_SIZE)
         loss_t = calc_loss(batch, net, tgt_net, device)
@@ -167,7 +183,8 @@ if __name__ == "__main__":
         scaler.update()
 
         # Algorithm 1: "Every C steps reset Q_hat = Q".
-        # Here replaced by Polyak averaging (soft update): theta- <- (1 - TAU) * theta- + TAU * theta.
+        # Here replaced by Polyak averaging (soft update): 
+        # theta- <- (1 - TAU) * theta- + TAU * theta.
         with torch.no_grad():
             for p, p_tgt in zip(net.parameters(), tgt_net.parameters()):
                 p_tgt.data.mul_(1 - TAU).add_(TAU * p.data)
