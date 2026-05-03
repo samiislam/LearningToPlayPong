@@ -22,7 +22,10 @@ BatchTensors = tuple[
 
 @dataclass
 class Experience:
-    """A single one-step transition (s, a, r, done, s')."""
+    """A single one-step transition stored in replay memory D.
+
+    Corresponds to the tuple (phi_t, a_t, r_t, phi_{t+1}) from Algorithm 1.
+    """
     state: State
     action: Action
     reward: float
@@ -31,7 +34,11 @@ class Experience:
 
 
 class ExperienceBuffer:
-    """Fixed-capacity replay buffer with uniform random sampling."""
+    """Replay memory D from Algorithm 1: fixed capacity N, uniform random sampling.
+
+    The paper notes this finite buffer overwrites the oldest transitions and gives
+    equal weight to all stored samples (no prioritization).
+    """
 
     def __init__(self, capacity: int):
         self.buffer = collections.deque(maxlen=capacity)
@@ -67,11 +74,18 @@ class Agent:
     @torch.no_grad()
     def play_step(self, net: dqn_model.DQN, device: torch.device,
                   epsilon: float = 0.0) -> list[tuple[float, int]]:
-        """Advance all envs by one step; return (reward, steps) for any finished episodes."""
+        """One environment step per env, then store transitions in D (Algorithm 1, inner loop).
+
+        Implements the inner-loop lines:
+            "With probability eps select a random action a_t,
+             otherwise select a_t = argmax_a Q(phi(s_t), a; theta)"
+            "Execute action a_t in emulator and observe reward r_t and image x_{t+1}"
+            "Store transition (phi_t, a_t, r_t, phi_{t+1}) in D"
+        """
         assert self.states is not None
         done_episodes: list[tuple[float, int]] = []
 
-        # epsilon-greedy action selection
+        # epsilon-greedy behaviour policy (Algorithm 1)
         if np.random.random() < epsilon:
             actions = self.env.action_space.sample()
         else:

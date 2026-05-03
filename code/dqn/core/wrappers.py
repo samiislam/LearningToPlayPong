@@ -1,3 +1,18 @@
+"""Gymnasium observation wrappers for ALE/Atari environments.
+
+Each class wraps a `gym.Env` (typically the raw `ALE/Pong-v5` env) and adapts
+its observation stream so the DQN can consume it:
+
+  - `ImageToPyTorch` — reorders observation axes from HWC (Atari/OpenCV layout)
+    to CHW (the layout `torch.nn.Conv2d` expects).
+  - `BufferWrapper` — stacks the last `n_steps` preprocessed frames into a
+    single observation, giving the network temporal context (the m=4 stack
+    from Mnih et al. 2015).
+  - `make_env` — composes Gymnasium's `AtariPreprocessing` (frame max-pool,
+    grayscale, 84x84 resize, terminal-on-life-loss) with the two wrappers
+    above to produce the full 84x84x4 input pipeline used during training
+    and evaluation.
+"""
 import collections
 
 import ale_py
@@ -56,7 +71,13 @@ class BufferWrapper(gym.ObservationWrapper):
 
 
 def make_env(env):
-    """Apply standard Atari preprocessing: downscale, grayscale, frame stack."""
+    """Apply the preprocessing map phi from Mnih et al. 2015 (Methods, "Preprocessing").
+
+    AtariPreprocessing performs: per-pixel max over the current and previous frame
+    (removes Atari sprite flicker), Y-channel luminance extraction, and rescaling
+    to 84x84. BufferWrapper then stacks the m=4 most recent preprocessed frames
+    into the network input, matching the 84x84x4 tensor described in the paper.
+    """
     env = AtariPreprocessing(env, noop_max=0, terminal_on_life_loss=True,
                              grayscale_obs=True, grayscale_newaxis=True, scale_obs=False)
     env = ImageToPyTorch(env)

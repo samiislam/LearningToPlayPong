@@ -1,9 +1,15 @@
-#!/usr/bin/env python3
 """Deep Q-Network (DQN) on Pong.
 
-Off-policy algorithm that learns a Q-value function from a replay buffer
-of past transitions.  Uses a target network (Polyak-averaged) for stable
-bootstrap targets and epsilon-greedy exploration.
+Implements "Algorithm 1: deep Q-learning with experience replay" from
+Mnih et al. 2015, "Human-level control through deep reinforcement learning"
+(Nature 518, 529-533). Off-policy: learns the greedy policy
+a = argmax_a' Q(s, a'; theta) while behaving epsilon-greedy.
+
+Deviations from the paper:
+  - Soft Polyak target update (TAU per step) instead of a hard copy every C steps.
+  - MSE loss instead of the [-1, 1]-clipped error (Huber-equivalent) the paper uses.
+  - Vectorised envs (N_ENVS) collect transitions in parallel.
+  - Adam optimiser instead of RMSProp.
 """
 import argparse
 import time
@@ -38,19 +44,25 @@ EPSILON_START = 1.0
 
 def calc_loss(batch: list[Experience], net: dqn_model.DQN, tgt_net: dqn_model.DQN,
               device: torch.device, gamma: float = GAMMA) -> torch.Tensor:
-    """Compute the DQN temporal-difference loss.
+    """Compute the DQN TD loss on a sampled minibatch (Algorithm 1, target y_j).
 
-    Uses the target network for bootstrap value estimation:
-    Q_target = r + gamma * max_a' Q_tgt(s', a')   (0 if terminal).
+    Implements:
+        y_j = r_j                                           if episode terminates at j+1
+        y_j = r_j + gamma * max_{a'} Q_hat(phi_{j+1}, a'; theta-)   otherwise
+    and returns (y_j - Q(phi_j, a_j; theta))^2 averaged over the batch (the paper
+    additionally clips the error term to [-1, 1] -- omitted here, plain MSE is used).
     """
     states_t, actions_t, rewards_t, dones_t, new_states_t = batch_to_tensors(batch, device)
 
     with torch.autocast(device_type=device.type):
+        # Q(phi_j, a_j; theta) for the action actually taken
         state_action_values = net(states_t).gather(
             1, actions_t.unsqueeze(-1)
         ).squeeze(-1)
         with torch.no_grad():
+            # max_{a'} Q_hat(phi_{j+1}, a'; theta-) using the target network
             next_state_values = tgt_net(new_states_t).max(1)[0]
+            # terminal-state guard: y_j = r_j when episode ended at j+1
             next_state_values[dones_t] = 0.0
 
         expected_state_action_values = next_state_values * gamma + rewards_t
@@ -76,8 +88,10 @@ if __name__ == "__main__":
     env = gym.vector.AsyncVectorEnv(env_factories)
     assert isinstance(env.single_observation_space, gym.spaces.Box)
     assert isinstance(env.single_action_space, gym.spaces.Discrete)
+    # Algorithm 1: "Initialize action-value function Q with random weights theta"
     raw_net = dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device)
     net = cast(dqn_model.DQN, torch.compile(raw_net, backend="cudagraphs"))
+    # Algorithm 1: "Initialize target action-value function Q_hat with weights theta- = theta"
     tgt_net = cast(dqn_model.DQN, torch.compile(
         dqn_model.DQN(env.single_observation_space.shape, env.single_action_space.n).to(device),
         backend="cudagraphs"))
@@ -85,6 +99,7 @@ if __name__ == "__main__":
     print(net)
     print(f"Actions: {env.single_action_space.n}")
 
+    # Algorithm 1: "Initialize replay memory D to capacity N"
     buffer = ExperienceBuffer(REPLAY_SIZE)
     agent = Agent(env, buffer)
     epsilon = EPSILON_START
@@ -100,10 +115,14 @@ if __name__ == "__main__":
     solved = False
     speed = 0.0
 
+    # Algorithm 1 outer loop ("For episode = 1, M do" merged with "For t = 1, T do":
+    # vectorised envs auto-reset, so a single loop covers both).
     while not solved:
         frame_idx += N_ENVS
+        # Linear epsilon annealing from EPSILON_START to EPSILON_FINAL
         epsilon = max(EPSILON_FINAL, EPSILON_START - frame_idx / EPSILON_DECAY_LAST_FRAME)
 
+        # Inner-loop steps: select a_t (eps-greedy), execute, store transition in D
         episodes = agent.play_step(net, device, epsilon)
         # update speed estimate when episodes finish
         if episodes:
@@ -134,10 +153,12 @@ if __name__ == "__main__":
                 solved = True
                 break
 
-        # wait until buffer has enough samples before training
+        # Wait until D holds enough transitions before sampling minibatches
         if len(buffer) < REPLAY_START_SIZE:
             continue
 
+        # Algorithm 1: "Sample random minibatch of transitions (phi_j, a_j, r_j, phi_{j+1}) from D"
+        # then "Perform a gradient descent step on (y_j - Q(phi_j, a_j; theta))^2 w.r.t. theta"
         optimizer.zero_grad()
         batch = buffer.sample(BATCH_SIZE)
         loss_t = calc_loss(batch, net, tgt_net, device)
@@ -145,7 +166,8 @@ if __name__ == "__main__":
         scaler.step(optimizer)
         scaler.update()
 
-        # Polyak averaging: soft-update target network
+        # Algorithm 1: "Every C steps reset Q_hat = Q".
+        # Here replaced by Polyak averaging (soft update): theta- <- (1 - TAU) * theta- + TAU * theta.
         with torch.no_grad():
             for p, p_tgt in zip(net.parameters(), tgt_net.parameters()):
                 p_tgt.data.mul_(1 - TAU).add_(TAU * p.data)

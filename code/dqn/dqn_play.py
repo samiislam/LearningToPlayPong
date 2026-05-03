@@ -1,4 +1,11 @@
-#!/usr/bin/env python3
+"""Greedy evaluation of a trained DQN checkpoint on Pong.
+
+Loads weights produced by `dqn_pong.py` (saved as `dqn-model-best.dat` whenever
+a new best 100-episode mean reward is reached) into a fresh DQN, plays a single
+Pong episode with `argmax_a Q(s, a)` (no exploration), records the rendered
+frames to disk via `gym.wrappers.RecordVideo`, and prints the final score plus
+a histogram of action selections.
+"""
 import gymnasium as gym
 import argparse
 import numpy as np
