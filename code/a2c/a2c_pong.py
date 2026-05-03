@@ -92,7 +92,7 @@ def calc_loss(net: AtariA2C, states_t: torch.Tensor, actions_t: torch.Tensor,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dev", default="cuda", help="Device to use, default=cuda")
-    parser.add_argument("--use-async", default=False, action='store_true',
+    parser.add_argument("--use-async", default=True, action='store_true',
                         help="Use async vector env (A3C mode)")
     args = parser.parse_args()
     device = torch.device(args.dev)
