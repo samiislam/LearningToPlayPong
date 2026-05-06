@@ -14,7 +14,6 @@ its observation stream so the A2C network can consume it:
     and evaluation.
 """
 import collections
-
 import ale_py
 import gymnasium as gym
 import numpy as np

@@ -9,13 +9,11 @@ a histogram of action selections.
 import gymnasium as gym
 import argparse
 import numpy as np
-
 import torch
+import collections
 
 from core import wrappers
 from core import model as dqn_model
-
-import collections
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

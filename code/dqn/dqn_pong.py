@@ -14,7 +14,6 @@ Deviations from the paper:
 import argparse
 import time
 from typing import cast
-
 import gymnasium as gym
 import numpy as np
 import torch
@@ -27,7 +26,6 @@ from core import model as dqn_model
 from core import wrappers
 from core.dqn_agent import Agent, Experience, ExperienceBuffer, batch_to_tensors
 
-
 BATCH_SIZE = 64
 GAMMA = 0.99
 LEARNING_RATE = 1e-4
@@ -37,7 +35,6 @@ REPLAY_SIZE = 100000
 REPLAY_START_SIZE = 10000   # fill buffer before training starts
 SEED = 42
 TAU = 0.005                 # Polyak averaging coefficient for target net
-
 EPSILON_DECAY_LAST_FRAME = 150000 * N_ENVS * 0.75
 EPSILON_FINAL = 0.01
 EPSILON_START = 1.0
@@ -64,7 +61,6 @@ def calc_loss(batch: list[Experience], net: dqn_model.DQN, tgt_net: dqn_model.DQ
             next_state_values = tgt_net(new_states_t).max(1)[0]
             # terminal-state guard: y_j = r_j when episode ended at j+1
             next_state_values[dones_t] = 0.0
-
         expected_state_action_values = next_state_values * gamma + rewards_t
         return nn.MSELoss()(state_action_values, expected_state_action_values)
 
