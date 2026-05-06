@@ -70,14 +70,18 @@ class BufferWrapper(gym.ObservationWrapper):
 
 
 def make_env(env):
-    """Apply standard Atari preprocessing: downscale, grayscale, frame stack."""
-    env = AtariPreprocessing(
-        env, 
-        noop_max=0, 
-        terminal_on_life_loss=True,
-        grayscale_obs=True, 
-        grayscale_newaxis=True, 
-        scale_obs=False)
+    """Apply the preprocessing map phi from Mnih et al. 2015 (Methods, "Preprocessing").
+
+    AtariPreprocessing performs: per-pixel max over the current and previous frame
+    (removes Atari sprite flicker), Y-channel luminance extraction, and rescaling
+    to 84x84. BufferWrapper then stacks the m=4 most recent preprocessed frames
+    into the network input, matching the 84x84x4 tensor described in the paper.
+    """
+    env = AtariPreprocessing(env, noop_max=0,
+                             frame_skip=4, screen_size=(84,84),
+                             terminal_on_life_loss=True,
+                             grayscale_obs=True, grayscale_newaxis=True, 
+                             scale_obs=False)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, n_steps=4)
     return env

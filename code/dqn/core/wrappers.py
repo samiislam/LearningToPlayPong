@@ -79,9 +79,9 @@ def make_env(env):
     into the network input, matching the 84x84x4 tensor described in the paper.
     """
     env = AtariPreprocessing(env, noop_max=0, 
+                             frame_skip=4, screen_size=(84,84),
                              terminal_on_life_loss=True,
-                             grayscale_obs=True, 
-                             grayscale_newaxis=True, 
+                             grayscale_obs=True, grayscale_newaxis=True, 
                              scale_obs=False)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, n_steps=4)
