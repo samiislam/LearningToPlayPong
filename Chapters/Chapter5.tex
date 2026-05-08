@@ -16,5 +16,11 @@ Both \acrshort{dqn} and \acrshort{a2c} use the exact same preprocessing so that 
 \section{DQN Implementation and Results}
 \label{sec:dqn_results}
 
+The network architecture for the \acrshort{dqn} is in listing $\hyperref[code:dqn_core_model]{code/dqn/core/model.py}$. The network consists of three convolutional layers. The filter count, kernel size, and stride of the layers are 32@8x8/s4, 64@4x4/s2, 64@3x3/s1 and all use ReLU activations. The last layer is a 512-unit fully connected layer ending in one linear unit per action and produces the Q-Value estimates, and not probabilities, for all actions simultaneously.
+
+The training procedure in listing $\hyperref[code:dqn_dqn_pong]{code/dqn/dqn\_pong.py}$ uses the network [line 95], the agent [line 116], the loss calculation [line 44] and the optimizer [line 119]. Six engineering and training speedup code optimizations that are not present in \citet{mnihHumanlevelControlDeep2015} have been applied. The first is vectorized environments [line 83], where N\_ENVS=8 number of parallel pong environments are used to collect 8 transitions per iteration in parallel, increasing the environment throughput without additional GPU cost. The second is Polyak averaging, also known as soft target updates, which continuously blends target weights toward the online network, avoiding the periodic stale-target intervals that slow early learning [lines 187-188]. The third optimization is mixed-precision training that halves memory bandwidth and doubles GPU arithmetic throughput by running most operations in fp16 instead of fp32 [line 57, 121]. The fourth is compiling the pytorch environment using cudagraphs which captures the entire forward pass as a single CUDA graph, eliminating per-step CPU kernel-launch overhead. The fifth optimization uses non-blocking tensor transfer which overlaps CPU-to-GPU data transfers with computation, reducing idle time on both sides.
+
+The agent in listing $\hyperref[code:dqn_core_dqn_agent]{code/dqn/core/dqn\_agent.py}$ interacts with the environment using a $\epsilon$-greedy policy [lines 96-103] derived from the Q-network [line 101]. The $\epsilon$-schedule is in $\hyperref[code:dqn_dqn_pong]{code/dqn/dqn\_pong.py}$ [line 40].
+
 \section{Policy Gradient Implementation and Results}
 \label{sec:a2c_results}

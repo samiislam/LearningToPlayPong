@@ -35,6 +35,8 @@ REPLAY_SIZE = 100000
 REPLAY_START_SIZE = 10000   # fill buffer before training starts
 SEED = 42
 TAU = 0.005                 # Polyak averaging coefficient for target net
+
+
 EPSILON_DECAY_LAST_FRAME = 150000 * N_ENVS * 0.75
 EPSILON_FINAL = 0.01
 EPSILON_START = 1.0
@@ -51,6 +53,7 @@ def calc_loss(batch: list[Experience], net: dqn_model.DQN, tgt_net: dqn_model.DQ
     """
     states_t, actions_t, rewards_t, dones_t, new_states_t = batch_to_tensors(batch, device)
 
+    # Mixed-precision training
     with torch.autocast(device_type=device.type):
         # Q(phi_j, a_j; theta) for the action actually taken
         state_action_values = net(states_t).gather(
@@ -114,6 +117,7 @@ if __name__ == "__main__":
     epsilon = EPSILON_START
 
     optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
+    # Mixed-precision training
     scaler = GradScaler("cuda")
     total_rewards = []
     frame_idx = 0

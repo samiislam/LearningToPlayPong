@@ -1,4 +1,10 @@
-"""DQN agent: experience replay buffer and epsilon-greedy interaction loop."""
+"""DQN agent: experience replay buffer and epsilon-greedy interaction loop.
+
+Implements "Algorithm 1: deep Q-learning with experience replay" from
+Mnih et al. 2015, "Human-level control through deep reinforcement learning"
+(Nature 518, 529-533).
+
+"""
 import collections
 from dataclasses import dataclass
 
