@@ -33,7 +33,6 @@ MEAN_REWARD_BOUND = 19
 N_ENVS = 8
 REPLAY_SIZE = 100000
 REPLAY_START_SIZE = 10000   # fill buffer before training starts
-SEED = 42
 TAU = 0.005                 # Polyak averaging coefficient for target net
 
 
@@ -71,22 +70,29 @@ def calc_loss(batch: list[Experience], net: dqn_model.DQN, tgt_net: dqn_model.DQ
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dev", default="cuda", help="Device name, default=cuda")
+    parser.add_argument("--seed", type=int, default=42, help="RNG seed, default=42")
     args = parser.parse_args()
     device = torch.device(args.dev)
+    seed = args.seed
 
     import random
-    random.seed(SEED)
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed(SEED)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
-    env_factories = [
-        lambda: wrappers.make_env(
-            gym.make("ALE/Pong-v5", 
-                     frameskip=1, 
-                     repeat_action_probability=0.0))
-        for _ in range(N_ENVS)
-    ]
+    def make_single_env(rank: int):
+        def _thunk():
+            e = wrappers.make_env(
+                gym.make("ALE/Pong-v5",
+                         frameskip=1,
+                         repeat_action_probability=0.0))
+            e.reset(seed=seed + rank)
+            e.action_space.seed(seed + rank)
+            return e
+        return _thunk
+
+    env_factories = [make_single_env(i) for i in range(N_ENVS)]
     env = gym.vector.AsyncVectorEnv(env_factories)
     assert isinstance(env.single_observation_space, gym.spaces.Box)
     assert isinstance(env.single_action_space, gym.spaces.Discrete)
@@ -106,7 +112,7 @@ if __name__ == "__main__":
             env.single_action_space.n).to(device),
         backend="cudagraphs"))
     
-    writer = SummaryWriter(comment="-pong-dqn")
+    writer = SummaryWriter(comment=f"-pong-dqn-seed{seed}")
     
     print(net)
     print(f"Actions: {env.single_action_space.n}")
@@ -158,7 +164,7 @@ if __name__ == "__main__":
             writer.add_scalar("reward", reward, frame_idx)
             writer.add_scalar("steps", steps, frame_idx)
             if best_m_reward is None or best_m_reward < m_reward:
-                torch.save(raw_net.state_dict(), "dqn-model-best.dat")
+                torch.save(raw_net.state_dict(), f"dqn-model-best-seed{seed}.dat")
                 if best_m_reward is not None:
                     print(f"Best reward updated {best_m_reward:.3f} -> {m_reward:.3f}")
                 best_m_reward = m_reward

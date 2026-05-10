@@ -1,10 +1,10 @@
 \chapter {System Setup}
 
-\section{System Hardware Configuration}
+\section{System Configuration}
 \begin{table}[H]
 	\centering
-	\caption{System Hardware Configuration}
-	\label{tab:system-hardware-configuration}
+	\caption{System Configuration}
+	\label{tab:system-configuration}
 	\begin{tabular}{|l|c|}
 		\hline
 		\textbf{Component} & \textbf{Detail} \\
@@ -23,19 +23,27 @@
 		\hline
 		Python package manager & uv 0.10.2 \\
 		\hline
+		CUDA Driver API & 13.2 \\
+		\hline
+		CUDA Toolkit & 12.6 \\
+		\hline
 	\end{tabular}
 \end{table}
 
 \section{Python packages for DQN and A2C}
+Python 3.11.9 is used for all code.
+
 \begin{table}[H]
 	\centering
 	\caption{Required python packages}
 	\label{tab:python-packages}
 	\begin{tabular}{|l|c|c|}
 		\hline
-		\textbf{Package} & \textbf{a2c} & \textbf{dqn} \\
+		\textbf{Package} & \textbf{\acrshort{dqn}} & \textbf{\acrshort{a2c}} \\
 		\hline
 		gymnasium{[}atari{]} & 1.3.0 & 1.3.0 \\
+		\hline
+		matplotlib & 3.10.9 & 3.10.9 \\
 		\hline
 		moviepy & 2.2.1 & 2.2.1 \\
 		\hline
