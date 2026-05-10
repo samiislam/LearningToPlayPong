@@ -16,3 +16,15 @@ The complete source code reside in github location: \url{https://github.com/sami
 
 \section{Playing Pong}
 \lstinputlisting[language=Python, caption={code\textbackslash dqn\textbackslash dqn\_play.py}, label={code:dqn_dqn_play}]{code/dqn/dqn_play.py}
+
+\section{Engineering and Training Speedup Optimizations}
+\label{sec:dqn-optimizations}
+Six engineering and speedup code optimizations in $\hyperref[code:dqn_dqn_pong]{dqn\_pong.py}$:
+\begin{itemize}
+\item Vectorized environments [line 83], where N\_ENVS=8 number of parallel pong environments are used to collect 8 transitions per iteration in parallel, increasing the environment throughput without additional GPU cost. 
+\item Polyak averaging, also known as soft target updates, which continuously blends target weights toward the online network, avoiding the periodic stale-target intervals that slow early learning [lines 187-188]. 
+\item Mixed-precision training that halves memory bandwidth and doubles GPU arithmetic throughput by running most operations in fp16 instead of fp32 [line 57, 121]. 
+\item Compiling the pytorch environment using cudagraphs [lines 99, 107; $\hyperref[code:dqn_core_dqn_agent]{dqn\_agent.py}$ line 99] which captures the entire forward pass as a single CUDA graph, eliminating per-step CPU kernel-launch overhead. 
+\item Non-blocking tensor transfer [$\hyperref[code:dqn_core_dqn_agent]{dqn\_agent.py}$ line 150] which overlaps CPU-to-GPU data transfers with computation, reducing idle time on both sides. 
+\item A different set of hyperparameters [lines 29-42].
+\end{itemize}
