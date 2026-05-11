@@ -30,7 +30,22 @@ A $\hyperref[code:dqn_core_wrappers]{wrappers.py}$ extends required Gymnasium AP
 After the training is complete, the $\hyperref[code:dqn_dqn_play]{dqn\_play.py}$ is used to play a game of pong which creates a recorded video of the game on disk.
 
 \subsection{Results}
-
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/dqn/learning_curve.png}
+	\caption{DQN learning curves on Pong across three random seeds. The black curve shows the mean, the shaded region $\pm 1\sigma$, and each vertical dotted line marks the frame at which that seed first reaches the threshold of 18.}
+	\label{fig:dqn_result}
+\end{figure}
 
 \section{Policy Gradient Implementation and Results}
 \label{sec:a2c_results}
+
+\subsection{Implementation}
+
+\subsection{Results}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/a2c/learning_curve.png}
+	\caption{A2C learning curves on Pong across three random seeds. The black curve shows the mean, the shaded region $\pm 1\sigma$, and each vertical dotted line marks the frame at which that seed first reaches the threshold of 18.}
+	\label{fig:a2c_result}
+\end{figure}

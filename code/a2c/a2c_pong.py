@@ -94,21 +94,35 @@ if __name__ == "__main__":
     parser.add_argument("--dev", default="cuda", help="Device to use, default=cuda")
     parser.add_argument("--use-async", default=True, action='store_true',
                         help="Use async vector env (A3C mode)")
+    parser.add_argument("--seed", type=int, default=42, help="RNG seed, default=42")
     args = parser.parse_args()
     device = torch.device(args.dev)
+    seed = args.seed
 
-    env_factories = [
-        lambda: wrappers.make_env(
-            gym.make("ALE/Pong-v5", 
-                     frameskip=1, 
-                     repeat_action_probability=0.0))
-        for _ in range(NUM_ENVS)
-    ]
+    import random
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if device.type == "cuda":
+        torch.cuda.manual_seed(seed)
+
+    def make_single_env(rank: int):
+        def _thunk():
+            e = wrappers.make_env(
+                gym.make("ALE/Pong-v5",
+                         frameskip=1,
+                         repeat_action_probability=0.0))
+            e.reset(seed=seed + rank)
+            e.action_space.seed(seed + rank)
+            return e
+        return _thunk
+
+    env_factories = [make_single_env(i) for i in range(NUM_ENVS)]
     if args.use_async:
         env = gym.vector.AsyncVectorEnv(env_factories)
     else:
         env = gym.vector.SyncVectorEnv(env_factories)
-    writer = SummaryWriter(comment="-pong-a2c")
+    writer = SummaryWriter(comment=f"-pong-a2c-seed{seed}")
 
     obs_shape = env.single_observation_space.shape
     assert obs_shape is not None
@@ -161,7 +175,7 @@ if __name__ == "__main__":
             writer.add_scalar("reward_100", m_reward, frame_idx)
             writer.add_scalar("reward", reward, frame_idx)
             if best_m_reward is None or best_m_reward < m_reward:
-                torch.save(net.state_dict(), "a2c-model-best.dat")
+                torch.save(net.state_dict(), f"a2c-model-best-seed{seed}.dat")
                 if best_m_reward is not None:
                     print(f"Best reward updated {best_m_reward:.3f} -> {m_reward:.3f}")
                 best_m_reward = m_reward
